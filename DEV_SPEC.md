@@ -1982,7 +1982,7 @@ dashboard:
 |---------|---------|------|---------|------|
 | C1 | 定义核心数据类型/契约（Document/Chunk/ChunkRecord） | [x] | 2026-04-10 | ImageRef+Document+Chunk+ChunkRecord+22单元测试 |
 | C2 | 文件完整性检查（SHA256） | [x] | 2026-04-10 | FileIntegrityChecker+SQLiteIntegrityChecker(WAL)+13单元测试 |
-| C3 | Loader 抽象基类与 PDF Loader | [ ] | | |
+| C3 | Loader 抽象基类与 PDF Loader | [x] | 2026-04-10 | BaseLoader+PdfLoader(PyMuPDF)+图片提取+占位符+13单元测试 |
 | C4 | Splitter 集成（调用 Libs） | [ ] | | |
 | C5 | Transform 基类 + ChunkRefiner | [ ] | | |
 | C6 | MetadataEnricher | [ ] | | |
@@ -2068,14 +2068,14 @@ dashboard:
 |------|---------|--------|------|
 | 阶段 A | 3 | 3 | 100% |
 | 阶段 B | 16 | 16 | 100% |
-| 阶段 C | 15 | 2 | 13% |
+| 阶段 C | 15 | 3 | 20% |
 | 阶段 D | 7 | 0 | 0% |
 | 阶段 E | 6 | 0 | 0% |
 | 阶段 F | 5 | 0 | 0% |
 | 阶段 G | 6 | 0 | 0% |
 | 阶段 H | 5 | 0 | 0% |
 | 阶段 I | 5 | 0 | 0% |
-| **总计** | **68** | **21** | **31%** |
+| **总计** | **68** | **22** | **32%** |
 
 
 ---
