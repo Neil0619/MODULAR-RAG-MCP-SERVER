@@ -66,6 +66,7 @@ class EmbeddingSettings:
     api_key: str = ""
     dimensions: int = 1536
     batch_size: int = 100
+    base_url: str = ""
     # Azure-specific
     azure_endpoint: str = ""
     api_version: str = ""

@@ -1965,14 +1965,14 @@ dashboard:
 | B4 | VectorStore 抽象接口与工厂 | [x] | 2026-04-09 | BaseVectorStore+VectorRecord+QueryResult+8单元测试 |
 | B5 | Reranker 抽象接口与工厂（含 None 回退） | [x] | 2026-04-09 | BaseReranker+NoneReranker+RerankerFactory+7单元测试 |
 | B6 | Evaluator 抽象接口与工厂 | [x] | 2026-04-09 | BaseEvaluator+CustomEvaluator(hit_rate/MRR)+7单元测试 |
-| B7.1 | OpenAI-Compatible LLM 实现 | [ ] | | |
-| B7.2 | Ollama LLM 实现 | [ ] | | |
-| B7.3 | OpenAI & Azure Embedding 实现 | [ ] | | |
-| B7.4 | Ollama Embedding 实现 | [ ] | | |
-| B7.5 | Recursive Splitter 默认实现 | [ ] | | |
-| B7.6 | ChromaStore 默认实现 | [ ] | | |
-| B7.7 | LLM Reranker 实现 | [ ] | | |
-| B7.8 | Cross-Encoder Reranker 实现 | [ ] | | |
+| B7.1 | OpenAI-Compatible LLM 实现 | [x] | 2026-04-09 | OpenAI/Azure/DeepSeek LLM实现+42单元测试 |
+| B7.2 | Ollama LLM 实现 | [x] | 2026-04-09 | OllamaLLM+7单元测试 |
+| B7.3 | OpenAI & Azure Embedding 实现 | [x] | 2026-04-09 | OpenAI/Azure Embedding+12单元测试 |
+| B7.4 | Ollama Embedding 实现 | [x] | 2026-04-09 | OllamaEmbedding+9单元测试 |
+| B7.5 | Recursive Splitter 默认实现 | [x] | 2026-04-09 | LangChain RecursiveCharacterTextSplitter封装+6单元测试 |
+| B7.6 | ChromaStore 默认实现 | [x] | 2026-04-09 | ChromaStore upsert/query+5集成测试 |
+| B7.7 | LLM Reranker 实现 | [x] | 2026-04-09 | LLMReranker prompt模板+JSON解析+降级+6单元测试 |
+| B7.8 | Cross-Encoder Reranker 实现 | [x] | 2026-04-09 | CrossEncoderReranker+错误降级+5单元测试 |
 | B8 | Vision LLM 抽象接口与工厂集成 | [ ] | | |
 | B9 | Azure Vision LLM 实现 | [ ] | | |
 
@@ -2066,8 +2066,8 @@ dashboard:
 
 | 阶段 | 总任务数 | 已完成 | 进度 |
 |------|---------|--------|------|
-| 阶段 A | 3 | 0 | 0% |
-| 阶段 B | 16 | 0 | 0% |
+| 阶段 A | 3 | 3 | 100% |
+| 阶段 B | 16 | 14 | 88% |
 | 阶段 C | 15 | 0 | 0% |
 | 阶段 D | 7 | 0 | 0% |
 | 阶段 E | 6 | 0 | 0% |
@@ -2075,7 +2075,7 @@ dashboard:
 | 阶段 G | 6 | 0 | 0% |
 | 阶段 H | 5 | 0 | 0% |
 | 阶段 I | 5 | 0 | 0% |
-| **总计** | **68** | **0** | **0%** |
+| **总计** | **68** | **17** | **25%** |
 
 
 ---
