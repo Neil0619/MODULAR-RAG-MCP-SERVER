@@ -1,0 +1,68 @@
+[
+  {
+    "name": "typical_noise_scenario",
+    "input": "Page 1 of 10\n\nIntroduction\n\nThis document describes the system architecture.\n\n---\n\nPage 2 of 10\n\nThe system uses microservices.",
+    "expected_patterns": {
+      "no_page_numbers": true,
+      "no_separators": true,
+      "contains": ["Introduction", "microservices"]
+    }
+  },
+  {
+    "name": "ocr_errors",
+    "input": "The 0CR system rec0gnized text with s0me err0rs.\nThe qu1ck br0wn f0x jumped 0ver.",
+    "expected_patterns": {
+      "contains": ["system", "text", "jumped"]
+    }
+  },
+  {
+    "name": "page_header_footer",
+    "input": "CONFIDENTIAL - INTERNAL USE ONLY\n\nMain content paragraph here.\n\nP. 5",
+    "expected_patterns": {
+      "contains": ["Main content"],
+      "no_page_numbers": true
+    }
+  },
+  {
+    "name": "excessive_whitespace",
+    "input": "Hello\n\n\n\n\n\nWorld\n\n\n\n\n\n\n\nFoo",
+    "expected_patterns": {
+      "max_consecutive_newlines": 2,
+      "contains": ["Hello", "World", "Foo"]
+    }
+  },
+  {
+    "name": "format_markers",
+    "input": "Some text\n\n<!-- this is an HTML comment -->\n\nMore text\n\n***\n\nFinal text",
+    "expected_patterns": {
+      "no_html_comments": true,
+      "no_separators": true,
+      "contains": ["Some text", "More text", "Final text"]
+    }
+  },
+  {
+    "name": "clean_text",
+    "input": "This is already clean text.\nNo noise here.\nJust normal paragraphs.",
+    "expected_patterns": {
+      "contains": ["clean text", "normal paragraphs"]
+    }
+  },
+  {
+    "name": "code_blocks",
+    "input": "Here is some code:\n\n    def hello():\n        print('world')\n        return True\n\nEnd of code section.",
+    "expected_patterns": {
+      "contains": ["def hello()", "print('world')", "return True"]
+    }
+  },
+  {
+    "name": "mixed_noise",
+    "input": "Page 3 of 7\n\n<!-- TODO: review -->\n\nIntroduction to AI\n\n\n\n\n\nMachine learning is a subset of AI.\n\n---\n\nPage 4 of 7\n\nDeep learning uses neural networks.",
+    "expected_patterns": {
+      "no_page_numbers": true,
+      "no_html_comments": true,
+      "no_separators": true,
+      "max_consecutive_newlines": 2,
+      "contains": ["Introduction to AI", "Machine learning", "neural networks"]
+    }
+  }
+]
