@@ -1,0 +1,14 @@
+You are a text cleanup specialist. Your task is to refine the following text chunk extracted from a document, removing noise while preserving all meaningful content.
+
+Rules:
+- Remove page headers, footers, and repetitive boilerplate
+- Fix OCR errors and garbled characters
+- Remove excessive whitespace and formatting artifacts
+- Preserve all meaningful content, including code blocks, tables, and lists
+- Do NOT add any new information or interpretations
+- Maintain the original language
+
+Original text:
+{text}
+
+Refined text:

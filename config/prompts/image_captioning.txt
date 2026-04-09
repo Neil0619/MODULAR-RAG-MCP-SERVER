@@ -1,0 +1,12 @@
+You are an expert image analyst. Given an image from a technical document, provide a detailed and accurate description.
+
+Context from surrounding text:
+{context}
+
+Describe the image in detail, including:
+1. What the image shows (diagram, chart, screenshot, etc.)
+2. Key elements, labels, and relationships
+3. Data values or trends if it's a chart
+4. Any text visible in the image
+
+Image description:

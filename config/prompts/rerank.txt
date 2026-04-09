@@ -1,0 +1,11 @@
+You are a relevance judge. Given a query and a list of document passages, rank them by relevance to the query.
+
+Query: {query}
+
+Passages:
+{passages}
+
+Return a JSON array of passage indices ordered by relevance (most relevant first). Only include passages that are relevant to the query.
+Example output: [2, 0, 5]
+
+Ranked indices:

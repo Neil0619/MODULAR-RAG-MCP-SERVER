@@ -1,0 +1,83 @@
+# Modular RAG MCP Server Configuration
+# All provider-specific credentials should be set via environment variables
+
+llm:
+  provider: azure  # azure | openai | ollama | deepseek
+  model: gpt-4o
+  azure_endpoint: "${AZURE_OPENAI_ENDPOINT}"
+  api_key: "${AZURE_OPENAI_API_KEY}"
+  api_version: "2024-02-15-preview"
+  deployment_name: "${AZURE_OPENAI_DEPLOYMENT_NAME}"
+  temperature: 0.0
+  max_tokens: 4096
+
+embedding:
+  provider: openai  # openai | azure | ollama
+  model: text-embedding-3-small
+  api_key: "${OPENAI_API_KEY}"
+  dimensions: 1536
+  batch_size: 100
+
+vision_llm:
+  provider: azure  # azure | dashscope
+  model: gpt-4o
+  azure_endpoint: "${AZURE_OPENAI_ENDPOINT}"
+  api_key: "${AZURE_OPENAI_API_KEY}"
+  api_version: "2024-02-15-preview"
+  deployment_name: "${AZURE_OPENAI_DEPLOYMENT_NAME}"
+  max_image_size: 2048
+
+vector_store:
+  backend: chroma  # chroma | qdrant | pinecone
+  persist_path: ./data/db/chroma
+
+splitter:
+  provider: recursive  # recursive | semantic | fixed
+  chunk_size: 1000
+  chunk_overlap: 200
+  separators:
+    - "\n\n"
+    - "\n"
+    - ". "
+    - " "
+    - ""
+
+retrieval:
+  sparse_backend: bm25  # bm25 | elasticsearch
+  fusion_algorithm: rrf  # rrf | weighted_sum
+  rrf_k: 60
+  top_k_dense: 20
+  top_k_sparse: 20
+  top_k_final: 10
+
+rerank:
+  backend: none  # none | cross_encoder | llm
+  model: cross-encoder/ms-marco-MiniLM-L-6-v2
+  top_m: 30
+
+ingestion:
+  chunk_refiner:
+    use_llm: false
+  metadata_enricher:
+    use_llm: true
+  image_captioner:
+    enabled: false
+
+evaluation:
+  backends:
+    - custom
+  golden_test_set: ./tests/fixtures/golden_test_set.json
+
+observability:
+  enabled: true
+  logging:
+    log_file: logs/traces.jsonl
+    log_level: INFO
+  detail_level: standard  # minimal | standard | verbose
+
+dashboard:
+  enabled: true
+  port: 8501
+  traces_dir: ./logs
+  auto_refresh: true
+  refresh_interval: 5
