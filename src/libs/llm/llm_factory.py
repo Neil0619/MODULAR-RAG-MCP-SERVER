@@ -24,6 +24,21 @@ _PROVIDER_REGISTRY: dict[str, str] = {
     "deepseek": "libs.llm.deepseek_llm.DeepSeekLLM",
 }
 
+# Vision LLM registry
+_VISION_REGISTRY: dict[str, str] = {
+    "azure": "libs.llm.azure_vision_llm.AzureVisionLLM",
+}
+
+
+def _instantiate(class_path: str, settings: Settings) -> BaseLLM:
+    """Lazy-import and instantiate a class from its dotted path."""
+    import importlib
+
+    module_path, class_name = class_path.rsplit(".", 1)
+    module = importlib.import_module(module_path)
+    cls = getattr(module, class_name)
+    return cls(settings)
+
 
 class LLMFactory:
     """Create LLM instances based on ``settings.llm.provider``."""
@@ -47,13 +62,7 @@ class LLMFactory:
             raise ValueError(
                 f"Unknown LLM provider: '{provider}'. Available: {available}"
             )
-
-        module_path, class_name = _PROVIDER_REGISTRY[provider].rsplit(".", 1)
-        import importlib
-
-        module = importlib.import_module(module_path)
-        cls = getattr(module, class_name)
-        return cls(settings)
+        return _instantiate(_PROVIDER_REGISTRY[provider], settings)
 
     @staticmethod
     def create_vision_llm(settings: Settings) -> BaseLLM:
@@ -62,26 +71,20 @@ class LLMFactory:
         Raises:
             ValueError: If the provider is unknown.
         """
-        from libs.llm.base_vision_llm import BaseVisionLLM
-
         provider = settings.vision_llm.provider.lower()
-        vision_registry: dict[str, str] = {
-            "azure": "libs.llm.azure_vision_llm.AzureVisionLLM",
-        }
-        if provider not in vision_registry:
-            available = ", ".join(sorted(vision_registry))
+        if provider not in _VISION_REGISTRY:
+            available = ", ".join(sorted(_VISION_REGISTRY))
             raise ValueError(
                 f"Unknown Vision LLM provider: '{provider}'. Available: {available}"
             )
-
-        module_path, class_name = vision_registry[provider].rsplit(".", 1)
-        import importlib
-
-        module = importlib.import_module(module_path)
-        cls = getattr(module, class_name)
-        return cls(settings)
+        return _instantiate(_VISION_REGISTRY[provider], settings)
 
     @staticmethod
     def register_provider(name: str, class_path: str) -> None:
         """Register a custom LLM provider at runtime."""
         _PROVIDER_REGISTRY[name.lower()] = class_path
+
+    @staticmethod
+    def register_vision_provider(name: str, class_path: str) -> None:
+        """Register a custom Vision LLM provider at runtime."""
+        _VISION_REGISTRY[name.lower()] = class_path

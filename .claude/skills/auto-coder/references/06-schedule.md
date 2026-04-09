@@ -63,7 +63,7 @@
 | B7.6 | ChromaStore 默认实现 | [x] | 2026-04-09 | ChromaStore upsert/query+5集成测试 |
 | B7.7 | LLM Reranker 实现 | [x] | 2026-04-09 | LLMReranker prompt模板+JSON解析+降级+6单元测试 |
 | B7.8 | Cross-Encoder Reranker 实现 | [x] | 2026-04-09 | CrossEncoderReranker+错误降级+5单元测试 |
-| B8 | Vision LLM 抽象接口与工厂集成 | [ ] | | |
+| B8 | Vision LLM 抽象接口与工厂集成 | [x] | 2026-04-09 | BaseVisionLLM+chat_with_image+encode_image+guess_mime+18单元测试 |
 | B9 | Azure Vision LLM 实现 | [ ] | | |
 
 #### 阶段 C：Ingestion Pipeline MVP
