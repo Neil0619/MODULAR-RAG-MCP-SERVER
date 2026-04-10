@@ -1999,7 +1999,7 @@ dashboard:
 | C10 | BatchProcessor | [x] | 2026-04-10 | BatchProcessor(批处理dense+sparse+trace)+12单元测试 |
 | C11 | BM25Indexer（倒排索引+IDF计算） | [x] | 2026-04-10 | BM25Indexer(倒排索引+IDF+BM25查询+持久化)+14单元测试 |
 | C12 | VectorUpserter（幂等upsert） | [x] | 2026-04-10 | VectorUpserter(确定性ID+幂等写入)+12单元测试 |
-| C13 | ImageStorage（图片存储+SQLite索引） | [ ] | | |
+| C13 | ImageStorage（图片存储+SQLite索引） | [x] | 2026-04-10 | ImageStorage(文件保存+SQLite索引+按collection/doc_hash查询)+12单元测试 |
 | C14 | Pipeline 编排（MVP 串起来） | [ ] | | |
 | C15 | 脚本入口 ingest.py | [ ] | | |
 
@@ -2075,14 +2075,14 @@ dashboard:
 |------|---------|--------|------|
 | 阶段 A | 3 | 3 | 100% |
 | 阶段 B | 17 | 17 | 100% |
-| 阶段 C | 15 | 12 | 80% |
+| 阶段 C | 15 | 13 | 87% |
 | 阶段 D | 7 | 0 | 0% |
 | 阶段 E | 6 | 0 | 0% |
 | 阶段 F | 5 | 0 | 0% |
 | 阶段 G | 6 | 0 | 0% |
 | 阶段 H | 5 | 0 | 0% |
 | 阶段 I | 5 | 0 | 0% |
-| **总计** | **69** | **32** | **46%** |
+| **总计** | **69** | **33** | **48%** |
 
 
 ---
