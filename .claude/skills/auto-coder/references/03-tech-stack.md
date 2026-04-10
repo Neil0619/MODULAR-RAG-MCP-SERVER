@@ -313,6 +313,7 @@ MCP 协议的 Tool 返回格式支持多种内容类型（`content` 数组），
 | **OpenAI 原生** | 通用开发、最新模型尝鲜 | `provider: openai`, `api_key`, `model` |
 | **DeepSeek / 其他云端** | 成本优化、特定语言优化 | `provider: deepseek`, `api_key`, `model` |
 | **Ollama / vLLM (本地)** | 完全离线、隐私敏感、无 API 成本 | `provider: ollama`, `base_url`, `model` |
+| **Doubao (Volcengine)** | 国内云端、中文优化、成本效益高 | `provider: doubao`, `api_key`, `model` |
 
 - **技术选型建议**：
 	- 本项目采用自研的 `BaseLLM` / `BaseEmbedding` 抽象基类，配合工厂模式（`llm_factory.py` / `embedding_factory.py`）实现统一调用接口。已内置 Azure OpenAI、OpenAI、Ollama、DeepSeek 四种 Provider 适配。
@@ -321,6 +322,7 @@ MCP 协议的 Tool 返回格式支持多种内容类型（`content` 数组），
 	- 对于企业级需求，可在其基础上增加统一的 **重试、限流、日志** 中间层，提升生产可靠性，但本项目暂不实现，这里仅提供思路。
 	- **Vision LLM 扩展**：针对图像描述生成（Image Captioning）需求，系统扩展了 `BaseVisionLLM` 接口，支持文本+图片的多模态输入。当前实现：
 		- **Azure OpenAI Vision**（GPT-4o/GPT-4-Vision）：企业级合规部署，支持复杂图表解析，与 Azure 生态深度集成。
+			- **Doubao Vision**（doubao-seed-2-0-pro）：火山引擎 Ark API 提供的视觉理解模型，中文场景表现优异，性价比高。
 
 #### 3.3.3 检索策略抽象
 
@@ -795,6 +797,7 @@ dashboard:
 | **Claude 3.5 Sonnet** | Anthropic | 多模态原生支持，长上下文 | 需要结合大段文字理解图片 | ⭐⭐⭐⭐ |
 | **Gemini Pro Vision** | Google | 成本较低，速度较快 | 大批量处理、成本敏感场景 | ⭐⭐⭐ |
 | **GLM-4V** | 智谱 AI (ZhipuAI) | 国内老牌，稳定性好，中文支持佳 | 国内部署备选、企业级应用 | ⭐⭐⭐⭐ |
+| **Doubao Seed Pro** | 字节跳动 (Volcengine) | 火山引擎 Ark API 接入，中文场景表现优异，性价比高 | 国内部署、中文文档、成本敏感场景 | ⭐⭐⭐⭐ |
 
 **双模型选型策略（推荐）**：
 

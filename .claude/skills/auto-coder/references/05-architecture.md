@@ -236,8 +236,10 @@ smart-knowledge-hub/
 │   │   │   ├── openai_llm.py            # OpenAI 实现
 │   │   │   ├── ollama_llm.py            # Ollama 本地模型实现
 │   │   │   ├── deepseek_llm.py          # DeepSeek 实现
+│   │   │   ├── doubao_llm.py            # Doubao (火山引擎) 实现
 │   │   │   ├── base_vision_llm.py       # Vision LLM 抽象基类（支持图像输入）
-│   │   │   └── azure_vision_llm.py      # Azure Vision 实现 (GPT-4o/GPT-4-Vision)
+│   │   │   ├── azure_vision_llm.py      # Azure Vision 实现 (GPT-4o/GPT-4-Vision)
+│   │   │   └── doubao_vision_llm.py     # Doubao Vision 实现 (火山引擎 Ark API)
 │   │   │
 │   │   ├── embedding/                   # Embedding 抽象
 │   │   │   ├── __init__.py
@@ -245,7 +247,8 @@ smart-knowledge-hub/
 │   │   │   ├── embedding_factory.py     # Embedding 工厂
 │   │   │   ├── openai_embedding.py      # OpenAI Embedding 实现
 │   │   │   ├── azure_embedding.py       # Azure Embedding 实现
-│   │   │   └── ollama_embedding.py      # Ollama 本地模型实现
+│   │   │   ├── ollama_embedding.py      # Ollama 本地模型实现
+│   │   │   └── doubao_embedding.py      # Doubao Embedding 实现 (火山引擎 Ark API)
 │   │   │
 │   │   ├── splitter/                    # Splitter 抽象 (切分策略)
 │   │   │   ├── __init__.py
@@ -419,9 +422,9 @@ smart-knowledge-hub/
 
 | 抽象接口 | 当前默认实现 | 可替换选项 |
 |---------|------------|----------|
-| `LLMClient` | Azure OpenAI | OpenAI / Ollama / DeepSeek |
-| `VisionLLMClient` | Azure OpenAI Vision (GPT-4o) | OpenAI Vision / Ollama Vision (LLaVA) |
-| `EmbeddingClient` | OpenAI text-embedding-3 | BGE / Ollama 本地模型 |
+| `LLMClient` | Azure OpenAI | OpenAI / Ollama / DeepSeek / Doubao (火山引擎) |
+| `VisionLLMClient` | Azure OpenAI Vision (GPT-4o) | OpenAI Vision / Ollama Vision (LLaVA) / Doubao Vision |
+| `EmbeddingClient` | OpenAI text-embedding-3 | BGE / Ollama 本地模型 / Doubao Embedding |
 | `Loader` | PDF Loader（MarkItDown） | Markdown/HTML/Code Loader 等 |
 | `FileIntegrity` | SQLite (`data/db/ingestion_history.db`) | Redis（分布式）/ PostgreSQL（企业级）/ JSON文件（测试） |
 | `Splitter` | RecursiveCharacterTextSplitter | Semantic / FixedLen |
@@ -589,19 +592,19 @@ Dashboard (Streamlit UI)
 
 # LLM 配置
 llm:
-  provider: azure           # azure | openai | ollama | deepseek
+  provider: azure           # azure | openai | ollama | deepseek | doubao
   model: gpt-4o
   azure_endpoint: "..."
   api_key: "${AZURE_API_KEY}"
 
 # Embedding 配置
 embedding:
-  provider: openai          # openai | azure | ollama (本地)
+  provider: openai          # openai | azure | ollama (本地) | doubao
   model: text-embedding-3-small
-  
+
 # Vision LLM 配置 (图片描述)
 vision_llm:
-  provider: azure           # azure | dashscope (Qwen-VL)
+  provider: azure           # azure | doubao | dashscope (Qwen-VL)
   model: gpt-4o
   
 # 向量存储配置

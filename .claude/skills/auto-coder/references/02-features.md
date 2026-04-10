@@ -21,7 +21,7 @@
         - **Azure OpenAI**：企业级 Azure 云端服务，符合合规与安全要求；
         - **OpenAI API**：直接对接 OpenAI 官方接口；
         - **本地模型**：支持 Ollama、vLLM、LM Studio 等本地私有化部署方案；
-        - **其他云服务**：DeepSeek、Anthropic Claude 等第三方 API。
+        - **其他云服务**：DeepSeek、Anthropic Claude、Doubao（豆包/火山引擎）等第三方 API。
     - 通过配置文件一键切换后端，**零代码修改**即可完成 LLM 迁移，便于成本优化、隐私合规或 A/B 测试。
 
 - **Embedding & Rerank 模型插拔 (Model Agnostic)**：
