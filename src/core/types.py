@@ -198,3 +198,35 @@ class ChunkRecord:
             dense_vector=dense_vector,
             sparse_vector=sparse_vector,
         )
+
+
+@dataclass
+class ProcessedQuery:
+    """A query after preprocessing (keyword extraction, filters, etc.).
+
+    Produced by :class:`QueryProcessor` and consumed by the retrieval pipeline.
+
+    Attributes:
+        original_query: The raw user query string.
+        keywords: Extracted keywords for sparse retrieval (BM25).
+        filters: Generic metadata filters (e.g. collection, doc_type).
+    """
+
+    original_query: str = ""
+    keywords: list[str] = field(default_factory=list)
+    filters: dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "original_query": self.original_query,
+            "keywords": self.keywords,
+            "filters": self.filters,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> ProcessedQuery:
+        return cls(
+            original_query=data.get("original_query", ""),
+            keywords=data.get("keywords", []),
+            filters=data.get("filters", {}),
+        )
