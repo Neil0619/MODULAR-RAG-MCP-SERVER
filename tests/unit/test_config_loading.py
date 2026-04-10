@@ -64,9 +64,9 @@ def test_load_settings_returns_correct_types() -> None:
 def test_load_settings_fields_populated() -> None:
     """Key fields from the default config must be populated."""
     settings = load_settings()
-    assert settings.llm.provider in {"azure", "openai", "ollama", "deepseek"}
+    assert settings.llm.provider in {"azure", "openai", "ollama", "deepseek", "doubao"}
     assert settings.llm.model  # non-empty
-    assert settings.embedding.provider in {"openai", "azure", "ollama"}
+    assert settings.embedding.provider in {"openai", "azure", "ollama", "doubao"}
     assert settings.embedding.model
     assert settings.vector_store.backend == "chroma"
 

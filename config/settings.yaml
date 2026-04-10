@@ -2,29 +2,23 @@
 # All provider-specific credentials should be set via environment variables
 
 llm:
-  provider: azure  # azure | openai | ollama | deepseek | doubao
-  model: gpt-4o
-  azure_endpoint: "${AZURE_OPENAI_ENDPOINT}"
-  api_key: "${AZURE_OPENAI_API_KEY}"
-  api_version: "2024-02-15-preview"
-  deployment_name: "${AZURE_OPENAI_DEPLOYMENT_NAME}"
+  provider: doubao  # azure | openai | ollama | deepseek | doubao
+  model: doubao-seed-2-0-pro-260215
+  api_key: "${VOLCES_API_KEY}"
   temperature: 0.0
   max_tokens: 4096
 
 embedding:
-  provider: openai  # openai | azure | ollama | doubao
-  model: text-embedding-3-small
-  api_key: "${OPENAI_API_KEY}"
+  provider: doubao  # openai | azure | ollama | doubao
+  model: doubao-embedding-vision-251215
+  api_key: "${VOLCES_API_KEY}"
   dimensions: 1536
   batch_size: 100
 
 vision_llm:
-  provider: azure  # azure | doubao | dashscope
-  model: gpt-4o
-  azure_endpoint: "${AZURE_OPENAI_ENDPOINT}"
-  api_key: "${AZURE_OPENAI_API_KEY}"
-  api_version: "2024-02-15-preview"
-  deployment_name: "${AZURE_OPENAI_DEPLOYMENT_NAME}"
+  provider: doubao  # azure | doubao | dashscope
+  model: doubao-seed-2-0-pro-260215
+  api_key: "${VOLCES_API_KEY}"
   max_image_size: 2048
 
 vector_store:
