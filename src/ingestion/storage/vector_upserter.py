@@ -8,6 +8,7 @@ Same content always produces the same ID, ensuring idempotency.
 from __future__ import annotations
 
 import hashlib
+import json
 from typing import TYPE_CHECKING, Any
 
 from core.types import ChunkRecord
@@ -29,6 +30,26 @@ def _generate_stable_id(record: ChunkRecord) -> str:
     content_hash = hashlib.sha256(record.text.encode()).hexdigest()[:8]
     source_hash = hashlib.sha256(source.encode()).hexdigest()[:8]
     return f"{source_hash}_{chunk_index:04d}_{content_hash}"
+
+
+def _sanitize_metadata(metadata: dict) -> dict:
+    """Strip non-primitive values from metadata for Chroma compatibility.
+
+    Chroma only accepts str, int, float, bool in metadata values.
+    Lists of primitives are okay, but nested dicts/lists of dicts are not.
+    """
+    clean: dict = {}
+    for k, v in metadata.items():
+        if isinstance(v, (str, int, float, bool)):
+            clean[k] = v
+        elif isinstance(v, list):
+            if v and all(isinstance(item, (str, int, float, bool)) for item in v):
+                clean[k] = v
+            elif v:
+                clean[k] = json.dumps(v, ensure_ascii=False)
+        elif v is None:
+            clean[k] = ""
+    return clean
 
 
 class VectorUpserter:
@@ -81,7 +102,7 @@ class VectorUpserter:
                 VectorRecord(
                     id=stable_id,
                     vector=rec.dense_vector,
-                    metadata=rec.metadata,
+                    metadata=_sanitize_metadata(rec.metadata),
                     text=rec.text,
                 )
             )

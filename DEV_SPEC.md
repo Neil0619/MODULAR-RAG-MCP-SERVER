@@ -2001,7 +2001,7 @@ dashboard:
 | C12 | VectorUpserter（幂等upsert） | [x] | 2026-04-10 | VectorUpserter(确定性ID+幂等写入)+12单元测试 |
 | C13 | ImageStorage（图片存储+SQLite索引） | [x] | 2026-04-10 | ImageStorage(文件保存+SQLite索引+按collection/doc_hash查询)+12单元测试 |
 | C14 | Pipeline 编排（MVP 串起来） | [x] | 2026-04-10 | IngestionPipeline 6阶段编排+PipelineError+6集成测试 |
-| C15 | 脚本入口 ingest.py | [ ] | | |
+| C15 | 脚本入口 ingest.py | [x] | 2026-04-10 | CLI入口+目录批量处理+metadata清洗+6 E2E测试 |
 
 #### 阶段 D：Retrieval MVP
 
@@ -2075,14 +2075,14 @@ dashboard:
 |------|---------|--------|------|
 | 阶段 A | 3 | 3 | 100% |
 | 阶段 B | 17 | 17 | 100% |
-| 阶段 C | 15 | 14 | 93% |
+| 阶段 C | 15 | 15 | 100% |
 | 阶段 D | 7 | 0 | 0% |
 | 阶段 E | 6 | 0 | 0% |
 | 阶段 F | 5 | 0 | 0% |
 | 阶段 G | 6 | 0 | 0% |
 | 阶段 H | 5 | 0 | 0% |
 | 阶段 I | 5 | 0 | 0% |
-| **总计** | **69** | **34** | **49%** |
+| **总计** | **69** | **35** | **51%** |
 
 
 ---
