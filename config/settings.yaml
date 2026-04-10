@@ -2,7 +2,7 @@
 # All provider-specific credentials should be set via environment variables
 
 llm:
-  provider: azure  # azure | openai | ollama | deepseek
+  provider: azure  # azure | openai | ollama | deepseek | doubao
   model: gpt-4o
   azure_endpoint: "${AZURE_OPENAI_ENDPOINT}"
   api_key: "${AZURE_OPENAI_API_KEY}"
@@ -12,14 +12,14 @@ llm:
   max_tokens: 4096
 
 embedding:
-  provider: openai  # openai | azure | ollama
+  provider: openai  # openai | azure | ollama | doubao
   model: text-embedding-3-small
   api_key: "${OPENAI_API_KEY}"
   dimensions: 1536
   batch_size: 100
 
 vision_llm:
-  provider: azure  # azure | dashscope
+  provider: azure  # azure | doubao | dashscope
   model: gpt-4o
   azure_endpoint: "${AZURE_OPENAI_ENDPOINT}"
   api_key: "${AZURE_OPENAI_API_KEY}"

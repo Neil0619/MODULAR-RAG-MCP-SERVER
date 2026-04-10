@@ -13,6 +13,7 @@ _PROVIDER_REGISTRY: dict[str, str] = {
     "openai": "libs.embedding.openai_embedding.OpenAIEmbedding",
     "azure": "libs.embedding.azure_embedding.AzureEmbedding",
     "ollama": "libs.embedding.ollama_embedding.OllamaEmbedding",
+    "doubao": "libs.embedding.doubao_embedding.DoubaoEmbedding",
 }
 
 

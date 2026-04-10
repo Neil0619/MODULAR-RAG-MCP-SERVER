@@ -22,11 +22,13 @@ _PROVIDER_REGISTRY: dict[str, str] = {
     "azure": "libs.llm.azure_llm.AzureLLM",
     "ollama": "libs.llm.ollama_llm.OllamaLLM",
     "deepseek": "libs.llm.deepseek_llm.DeepSeekLLM",
+    "doubao": "libs.llm.doubao_llm.DoubaoLLM",
 }
 
 # Vision LLM registry
 _VISION_REGISTRY: dict[str, str] = {
     "azure": "libs.llm.azure_vision_llm.AzureVisionLLM",
+    "doubao": "libs.llm.doubao_vision_llm.DoubaoVisionLLM",
 }
 
 

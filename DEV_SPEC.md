@@ -84,7 +84,7 @@
         - **Azure OpenAI**：企业级 Azure 云端服务，符合合规与安全要求；
         - **OpenAI API**：直接对接 OpenAI 官方接口；
         - **本地模型**：支持 Ollama、vLLM、LM Studio 等本地私有化部署方案；
-        - **其他云服务**：DeepSeek、Anthropic Claude 等第三方 API。
+        - **其他云服务**：DeepSeek、Anthropic Claude、Doubao（豆包/火山引擎）等第三方 API。
     - 通过配置文件一键切换后端，**零代码修改**即可完成 LLM 迁移，便于成本优化、隐私合规或 A/B 测试。
 
 - **Embedding & Rerank 模型插拔 (Model Agnostic)**：
@@ -481,6 +481,7 @@ MCP 协议的 Tool 返回格式支持多种内容类型（`content` 数组），
 | **OpenAI 原生** | 通用开发、最新模型尝鲜 | `provider: openai`, `api_key`, `model` |
 | **DeepSeek / 其他云端** | 成本优化、特定语言优化 | `provider: deepseek`, `api_key`, `model` |
 | **Ollama / vLLM (本地)** | 完全离线、隐私敏感、无 API 成本 | `provider: ollama`, `base_url`, `model` |
+| **Doubao (Volcengine)** | 国内云端、中文优化、成本效益高 | `provider: doubao`, `api_key`, `model` |
 
 - **技术选型建议**：
 	- 本项目采用自研的 `BaseLLM` / `BaseEmbedding` 抽象基类，配合工厂模式（`llm_factory.py` / `embedding_factory.py`）实现统一调用接口。已内置 Azure OpenAI、OpenAI、Ollama、DeepSeek 四种 Provider 适配。
@@ -489,6 +490,7 @@ MCP 协议的 Tool 返回格式支持多种内容类型（`content` 数组），
 	- 对于企业级需求，可在其基础上增加统一的 **重试、限流、日志** 中间层，提升生产可靠性，但本项目暂不实现，这里仅提供思路。
 	- **Vision LLM 扩展**：针对图像描述生成（Image Captioning）需求，系统扩展了 `BaseVisionLLM` 接口，支持文本+图片的多模态输入。当前实现：
 		- **Azure OpenAI Vision**（GPT-4o/GPT-4-Vision）：企业级合规部署，支持复杂图表解析，与 Azure 生态深度集成。
+			- **Doubao Vision**（doubao-seed-2-0-pro）：火山引擎 Ark API 提供的视觉理解模型，中文场景表现优异，性价比高。
 
 #### 3.3.3 检索策略抽象
 
@@ -963,6 +965,7 @@ dashboard:
 | **Claude 3.5 Sonnet** | Anthropic | 多模态原生支持，长上下文 | 需要结合大段文字理解图片 | ⭐⭐⭐⭐ |
 | **Gemini Pro Vision** | Google | 成本较低，速度较快 | 大批量处理、成本敏感场景 | ⭐⭐⭐ |
 | **GLM-4V** | 智谱 AI (ZhipuAI) | 国内老牌，稳定性好，中文支持佳 | 国内部署备选、企业级应用 | ⭐⭐⭐⭐ |
+| **Doubao Seed Pro** | 字节跳动 (Volcengine) | 火山引擎 Ark API 接入，中文场景表现优异，性价比高 | 国内部署、中文文档、成本敏感场景 | ⭐⭐⭐⭐ |
 
 **双模型选型策略（推荐）**：
 
@@ -1493,8 +1496,10 @@ smart-knowledge-hub/
 │   │   │   ├── openai_llm.py            # OpenAI 实现
 │   │   │   ├── ollama_llm.py            # Ollama 本地模型实现
 │   │   │   ├── deepseek_llm.py          # DeepSeek 实现
+│   │   │   ├── doubao_llm.py            # Doubao (火山引擎) 实现
 │   │   │   ├── base_vision_llm.py       # Vision LLM 抽象基类（支持图像输入）
-│   │   │   └── azure_vision_llm.py      # Azure Vision 实现 (GPT-4o/GPT-4-Vision)
+│   │   │   ├── azure_vision_llm.py      # Azure Vision 实现 (GPT-4o/GPT-4-Vision)
+│   │   │   └── doubao_vision_llm.py     # Doubao Vision 实现 (火山引擎 Ark API)
 │   │   │
 │   │   ├── embedding/                   # Embedding 抽象
 │   │   │   ├── __init__.py
@@ -1502,7 +1507,8 @@ smart-knowledge-hub/
 │   │   │   ├── embedding_factory.py     # Embedding 工厂
 │   │   │   ├── openai_embedding.py      # OpenAI Embedding 实现
 │   │   │   ├── azure_embedding.py       # Azure Embedding 实现
-│   │   │   └── ollama_embedding.py      # Ollama 本地模型实现
+│   │   │   ├── ollama_embedding.py      # Ollama 本地模型实现
+│   │   │   └── doubao_embedding.py      # Doubao Embedding 实现 (火山引擎 Ark API)
 │   │   │
 │   │   ├── splitter/                    # Splitter 抽象 (切分策略)
 │   │   │   ├── __init__.py
@@ -1676,9 +1682,9 @@ smart-knowledge-hub/
 
 | 抽象接口 | 当前默认实现 | 可替换选项 |
 |---------|------------|----------|
-| `LLMClient` | Azure OpenAI | OpenAI / Ollama / DeepSeek |
-| `VisionLLMClient` | Azure OpenAI Vision (GPT-4o) | OpenAI Vision / Ollama Vision (LLaVA) |
-| `EmbeddingClient` | OpenAI text-embedding-3 | BGE / Ollama 本地模型 |
+| `LLMClient` | Azure OpenAI | OpenAI / Ollama / DeepSeek / Doubao (火山引擎) |
+| `VisionLLMClient` | Azure OpenAI Vision (GPT-4o) | OpenAI Vision / Ollama Vision (LLaVA) / Doubao Vision |
+| `EmbeddingClient` | OpenAI text-embedding-3 | BGE / Ollama 本地模型 / Doubao Embedding |
 | `Loader` | PDF Loader（MarkItDown） | Markdown/HTML/Code Loader 等 |
 | `FileIntegrity` | SQLite (`data/db/ingestion_history.db`) | Redis（分布式）/ PostgreSQL（企业级）/ JSON文件（测试） |
 | `Splitter` | RecursiveCharacterTextSplitter | Semantic / FixedLen |
@@ -1846,19 +1852,19 @@ Dashboard (Streamlit UI)
 
 # LLM 配置
 llm:
-  provider: azure           # azure | openai | ollama | deepseek
+  provider: azure           # azure | openai | ollama | deepseek | doubao
   model: gpt-4o
   azure_endpoint: "..."
   api_key: "${AZURE_API_KEY}"
 
 # Embedding 配置
 embedding:
-  provider: openai          # openai | azure | ollama (本地)
+  provider: openai          # openai | azure | ollama (本地) | doubao
   model: text-embedding-3-small
-  
+
 # Vision LLM 配置 (图片描述)
 vision_llm:
-  provider: azure           # azure | dashscope (Qwen-VL)
+  provider: azure           # azure | doubao | dashscope (Qwen-VL)
   model: gpt-4o
   
 # 向量存储配置
@@ -1975,6 +1981,7 @@ dashboard:
 | B7.8 | Cross-Encoder Reranker 实现 | [x] | 2026-04-09 | CrossEncoderReranker+错误降级+5单元测试 |
 | B8 | Vision LLM 抽象接口与工厂集成 | [x] | 2026-04-09 | BaseVisionLLM+chat_with_image+encode_image+guess_mime+18单元测试 |
 | B9 | Azure Vision LLM 实现 | [x] | 2026-04-09 | AzureVisionLLM+chat_with_image+图片压缩+13单元测试 |
+| B10 | Doubao (Volcengine) LLM + Embedding + Vision LLM 实现 | [x] | 2026-04-10 | DoubaoLLM+DoubaoEmbedding+DoubaoVisionLLM+33单元测试 |
 
 #### 阶段 C：Ingestion Pipeline MVP
 
@@ -2067,7 +2074,7 @@ dashboard:
 | 阶段 | 总任务数 | 已完成 | 进度 |
 |------|---------|--------|------|
 | 阶段 A | 3 | 3 | 100% |
-| 阶段 B | 16 | 16 | 100% |
+| 阶段 B | 17 | 17 | 100% |
 | 阶段 C | 15 | 12 | 80% |
 | 阶段 D | 7 | 0 | 0% |
 | 阶段 E | 6 | 0 | 0% |
@@ -2075,7 +2082,7 @@ dashboard:
 | 阶段 G | 6 | 0 | 0% |
 | 阶段 H | 5 | 0 | 0% |
 | 阶段 I | 5 | 0 | 0% |
-| **总计** | **68** | **31** | **46%** |
+| **总计** | **69** | **32** | **46%** |
 
 
 ---
@@ -2334,6 +2341,31 @@ dashboard:
   - API 调用失败时抛出清晰错误，包含 Azure 特有错误码。
   - mock 测试覆盖：正常调用、图片压缩、超时、认证失败等场景。
 - **测试方法**：`pytest -q tests/unit/test_azure_vision_llm.py`。
+
+### B10：Doubao (Volcengine) LLM + Embedding + Vision LLM 实现
+- **目标**：新增字节跳动豆包 (Doubao) 模型支持，通过火山引擎 Ark API（OpenAI 兼容，`https://ark.cn-beijing.volces.com/api/v3`）接入，覆盖 LLM、Embedding、Vision LLM 三类 Provider。
+- **修改文件**：
+  - `src/libs/llm/doubao_llm.py`（新增：DoubaoLLM，参考 deepseek_llm.py 模式）
+  - `src/libs/embedding/doubao_embedding.py`（新增：DoubaoEmbedding，参考 openai_embedding.py 模式）
+  - `src/libs/llm/doubao_vision_llm.py`（新增：DoubaoVisionLLM，参考 azure_vision_llm.py 模式）
+  - `src/libs/llm/llm_factory.py`（注册表添加 doubao LLM + Vision）
+  - `src/libs/embedding/embedding_factory.py`（注册表添加 doubao）
+  - `src/core/settings.py`（VisionLLMSettings 添加 base_url 字段）
+  - `config/settings.yaml`（provider 注释更新）
+  - `tests/unit/test_doubao_llm.py`（新增：10单元测试）
+  - `tests/unit/test_doubao_embedding.py`（新增：10单元测试）
+  - `tests/unit/test_doubao_vision_llm.py`（新增：13单元测试）
+- **实现类/函数**：
+  - `DoubaoLLM(BaseLLM)`：使用 OpenAI SDK 指向 Ark API base_url，支持 model name 或 endpoint ID
+  - `DoubaoEmbedding(BaseEmbedding)`：使用 OpenAI SDK + 批量分割 + 可选 dimensions
+  - `DoubaoVisionLLM(BaseVisionLLM)`：使用 OpenAI SDK + base64 图片 + 自动压缩
+- **验收标准**：
+  - `provider=doubao` 通过三个工厂（LLM / Embedding / Vision）正确路由
+  - 所有 mock 测试通过（33个）
+  - 错误信息以 "Doubao" 前缀标识
+  - `VisionLLMSettings` 新增 `base_url` 字段（向后兼容）
+  - 全量 `pytest -q` 无回归
+- **测试方法**：`pytest -q tests/unit/test_doubao_llm.py tests/unit/test_doubao_embedding.py tests/unit/test_doubao_vision_llm.py`
 
 ---
 

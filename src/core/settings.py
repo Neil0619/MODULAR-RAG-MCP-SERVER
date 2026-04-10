@@ -77,8 +77,10 @@ class EmbeddingSettings:
 class VisionLLMSettings:
     provider: str = ""
     model: str = ""
-    azure_endpoint: str = ""
     api_key: str = ""
+    base_url: str = ""
+    # Azure-specific
+    azure_endpoint: str = ""
     api_version: str = ""
     deployment_name: str = ""
     max_image_size: int = 2048

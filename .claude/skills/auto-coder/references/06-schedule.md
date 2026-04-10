@@ -65,6 +65,7 @@
 | B7.8 | Cross-Encoder Reranker 实现 | [x] | 2026-04-09 | CrossEncoderReranker+错误降级+5单元测试 |
 | B8 | Vision LLM 抽象接口与工厂集成 | [x] | 2026-04-09 | BaseVisionLLM+chat_with_image+encode_image+guess_mime+18单元测试 |
 | B9 | Azure Vision LLM 实现 | [x] | 2026-04-09 | AzureVisionLLM+chat_with_image+图片压缩+13单元测试 |
+| B10 | Doubao (Volcengine) LLM + Embedding + Vision LLM 实现 | [x] | 2026-04-10 | DoubaoLLM+DoubaoEmbedding+DoubaoVisionLLM+33单元测试 |
 
 #### 阶段 C：Ingestion Pipeline MVP
 
@@ -157,7 +158,7 @@
 | 阶段 | 总任务数 | 已完成 | 进度 |
 |------|---------|--------|------|
 | 阶段 A | 3 | 3 | 100% |
-| 阶段 B | 16 | 16 | 100% |
+| 阶段 B | 17 | 17 | 100% |
 | 阶段 C | 15 | 12 | 80% |
 | 阶段 D | 7 | 0 | 0% |
 | 阶段 E | 6 | 0 | 0% |
@@ -165,7 +166,7 @@
 | 阶段 G | 6 | 0 | 0% |
 | 阶段 H | 5 | 0 | 0% |
 | 阶段 I | 5 | 0 | 0% |
-| **总计** | **68** | **31** | **46%** |
+| **总计** | **69** | **32** | **46%** |
 
 
 ---
@@ -424,6 +425,31 @@
   - API 调用失败时抛出清晰错误，包含 Azure 特有错误码。
   - mock 测试覆盖：正常调用、图片压缩、超时、认证失败等场景。
 - **测试方法**：`pytest -q tests/unit/test_azure_vision_llm.py`。
+
+### B10：Doubao (Volcengine) LLM + Embedding + Vision LLM 实现
+- **目标**：新增字节跳动豆包 (Doubao) 模型支持，通过火山引擎 Ark API（OpenAI 兼容，`https://ark.cn-beijing.volces.com/api/v3`）接入，覆盖 LLM、Embedding、Vision LLM 三类 Provider。
+- **修改文件**：
+  - `src/libs/llm/doubao_llm.py`（新增：DoubaoLLM，参考 deepseek_llm.py 模式）
+  - `src/libs/embedding/doubao_embedding.py`（新增：DoubaoEmbedding，参考 openai_embedding.py 模式）
+  - `src/libs/llm/doubao_vision_llm.py`（新增：DoubaoVisionLLM，参考 azure_vision_llm.py 模式）
+  - `src/libs/llm/llm_factory.py`（注册表添加 doubao LLM + Vision）
+  - `src/libs/embedding/embedding_factory.py`（注册表添加 doubao）
+  - `src/core/settings.py`（VisionLLMSettings 添加 base_url 字段）
+  - `config/settings.yaml`（provider 注释更新）
+  - `tests/unit/test_doubao_llm.py`（新增：10单元测试）
+  - `tests/unit/test_doubao_embedding.py`（新增：10单元测试）
+  - `tests/unit/test_doubao_vision_llm.py`（新增：13单元测试）
+- **实现类/函数**：
+  - `DoubaoLLM(BaseLLM)`：使用 OpenAI SDK 指向 Ark API base_url，支持 model name 或 endpoint ID
+  - `DoubaoEmbedding(BaseEmbedding)`：使用 OpenAI SDK + 批量分割 + 可选 dimensions
+  - `DoubaoVisionLLM(BaseVisionLLM)`：使用 OpenAI SDK + base64 图片 + 自动压缩
+- **验收标准**：
+  - `provider=doubao` 通过三个工厂（LLM / Embedding / Vision）正确路由
+  - 所有 mock 测试通过（33个）
+  - 错误信息以 "Doubao" 前缀标识
+  - `VisionLLMSettings` 新增 `base_url` 字段（向后兼容）
+  - 全量 `pytest -q` 无回归
+- **测试方法**：`pytest -q tests/unit/test_doubao_llm.py tests/unit/test_doubao_embedding.py tests/unit/test_doubao_vision_llm.py`
 
 ---
 
