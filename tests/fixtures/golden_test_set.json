@@ -1,0 +1,20 @@
+{
+  "description": "Golden test set for RAG evaluation. Each test case has a query, expected chunk IDs, and expected source files.",
+  "test_cases": [
+    {
+      "query": "What is RAG?",
+      "expected_chunk_ids": [],
+      "expected_sources": []
+    },
+    {
+      "query": "How does hybrid search work?",
+      "expected_chunk_ids": [],
+      "expected_sources": []
+    },
+    {
+      "query": "What is BM25?",
+      "expected_chunk_ids": [],
+      "expected_sources": []
+    }
+  ]
+}
