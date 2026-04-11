@@ -131,6 +131,10 @@ class TestDashboardImports:
         from observability.dashboard.pages.query_traces import render
         assert callable(render)
 
+    def test_import_evaluation_panel(self) -> None:
+        from observability.dashboard.pages.evaluation_panel import render
+        assert callable(render)
+
     def test_start_dashboard_script_exists(self) -> None:
         script = Path(__file__).resolve().parents[2] / "scripts" / "start_dashboard.py"
         assert script.exists()
