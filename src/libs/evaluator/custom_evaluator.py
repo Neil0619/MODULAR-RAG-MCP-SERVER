@@ -8,6 +8,9 @@ from libs.evaluator.base_evaluator import BaseEvaluator
 class CustomEvaluator(BaseEvaluator):
     """Lightweight evaluator computing hit_rate and MRR."""
 
+    def __init__(self, settings: Any = None) -> None:
+        pass
+
     def evaluate(
         self,
         query: str,
