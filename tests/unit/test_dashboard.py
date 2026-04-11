@@ -119,6 +119,14 @@ class TestDashboardImports:
         from observability.dashboard.pages.ingestion_manager import render
         assert callable(render)
 
+    def test_import_ingestion_traces(self) -> None:
+        from observability.dashboard.pages.ingestion_traces import render
+        assert callable(render)
+
+    def test_import_trace_service(self) -> None:
+        from observability.dashboard.services.trace_service import TraceService
+        assert TraceService is not None
+
     def test_start_dashboard_script_exists(self) -> None:
         script = Path(__file__).resolve().parents[2] / "scripts" / "start_dashboard.py"
         assert script.exists()
@@ -202,3 +210,111 @@ class TestDataService:
         )
         assert svc.get_image_path("img1") == "/tmp/img1.png"
         assert svc.get_image_path("missing") is None
+
+
+# ---------------------------------------------------------------------------
+# TraceService unit tests (G5)
+# ---------------------------------------------------------------------------
+
+
+def _write_jsonl(path: Path, traces: list[dict[str, Any]]) -> None:
+    """Write traces as JSONL envelopes (same format as write_trace)."""
+    import json
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        for t in traces:
+            envelope = {
+                "timestamp": "2026-04-12T12:00:00",
+                "level": "INFO",
+                "logger": "rag.trace",
+                "message": json.dumps(t, ensure_ascii=False),
+            }
+            f.write(json.dumps(envelope) + "\n")
+
+
+class TestTraceService:
+
+    def test_list_traces_empty(self, tmp_path: Path) -> None:
+        from observability.dashboard.services.trace_service import TraceService
+        svc = TraceService(str(tmp_path / "nosuch.jsonl"))
+        assert svc.list_traces() == []
+
+    def test_list_traces_reads_file(self, tmp_path: Path) -> None:
+        from observability.dashboard.services.trace_service import TraceService
+        f = tmp_path / "traces.jsonl"
+        _write_jsonl(f, [
+            {"trace_id": "t1", "trace_type": "ingestion"},
+            {"trace_id": "t2", "trace_type": "query"},
+            {"trace_id": "t3", "trace_type": "ingestion"},
+        ])
+        svc = TraceService(str(f))
+        all_traces = svc.list_traces()
+        assert len(all_traces) == 3
+
+    def test_list_traces_filter_by_type(self, tmp_path: Path) -> None:
+        from observability.dashboard.services.trace_service import TraceService
+        f = tmp_path / "traces.jsonl"
+        _write_jsonl(f, [
+            {"trace_id": "t1", "trace_type": "ingestion"},
+            {"trace_id": "t2", "trace_type": "query"},
+            {"trace_id": "t3", "trace_type": "ingestion"},
+        ])
+        svc = TraceService(str(f))
+        ingest = svc.list_traces(trace_type="ingestion")
+        assert len(ingest) == 2
+        assert all(t["trace_type"] == "ingestion" for t in ingest)
+
+    def test_list_traces_newest_first(self, tmp_path: Path) -> None:
+        from observability.dashboard.services.trace_service import TraceService
+        f = tmp_path / "traces.jsonl"
+        _write_jsonl(f, [
+            {"trace_id": "old", "trace_type": "ingestion"},
+            {"trace_id": "new", "trace_type": "ingestion"},
+        ])
+        svc = TraceService(str(f))
+        traces = svc.list_traces(trace_type="ingestion")
+        assert traces[0]["trace_id"] == "new"
+        assert traces[1]["trace_id"] == "old"
+
+    def test_get_trace_by_id(self, tmp_path: Path) -> None:
+        from observability.dashboard.services.trace_service import TraceService
+        f = tmp_path / "traces.jsonl"
+        _write_jsonl(f, [
+            {"trace_id": "abc", "trace_type": "query"},
+            {"trace_id": "def", "trace_type": "ingestion"},
+        ])
+        svc = TraceService(str(f))
+        assert svc.get_trace("def") is not None
+        assert svc.get_trace("def")["trace_type"] == "ingestion"
+        assert svc.get_trace("zzz") is None
+
+    def test_get_stage_elapsed(self, tmp_path: Path) -> None:
+        from observability.dashboard.services.trace_service import TraceService
+        svc = TraceService(str(tmp_path / "x.jsonl"))
+        trace = {
+            "trace_id": "t1",
+            "stages": {
+                "load": {"elapsed_ms": 100.0, "method": "markitdown"},
+                "split": {"elapsed_ms": 50.0, "method": "recursive"},
+            },
+        }
+        stages = svc.get_stage_elapsed(trace)
+        assert len(stages) == 2
+        names = {s["stage"] for s in stages}
+        assert names == {"load", "split"}
+        load = next(s for s in stages if s["stage"] == "load")
+        assert load["elapsed_ms"] == 100.0
+        assert load["method"] == "markitdown"
+
+    def test_get_stage_elapsed_empty(self, tmp_path: Path) -> None:
+        from observability.dashboard.services.trace_service import TraceService
+        svc = TraceService(str(tmp_path / "x.jsonl"))
+        assert svc.get_stage_elapsed({}) == []
+        assert svc.get_stage_elapsed({"stages": {}}) == []
+
+    def test_limit(self, tmp_path: Path) -> None:
+        from observability.dashboard.services.trace_service import TraceService
+        f = tmp_path / "traces.jsonl"
+        _write_jsonl(f, [{"trace_id": f"t{i}", "trace_type": "query"} for i in range(20)])
+        svc = TraceService(str(f))
+        assert len(svc.list_traces(limit=5)) == 5
