@@ -36,6 +36,9 @@ class FakeVectorStore(BaseVectorStore):
     def get_collection_stats(self, collection: str = "default") -> dict[str, Any]:
         return {"count": len(self._store)}
 
+    def get_all(self, *, collection: str = "default") -> list[dict[str, Any]]:
+        return list(self._store.values())
+
 
 def _settings(backend: str = "fake") -> Settings:
     return Settings(

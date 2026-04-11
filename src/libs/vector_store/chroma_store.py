@@ -133,3 +133,24 @@ class ChromaStore(BaseVectorStore):
             "name": collection,
             "doc_count": col.count(),
         }
+
+    def get_all(
+        self,
+        *,
+        collection: str = "default",
+    ) -> list[dict[str, Any]]:
+        col = self._get_or_create_collection(collection)
+        if col.count() == 0:
+            return []
+
+        result = col.get(include=["documents", "metadatas"])
+        out: list[dict[str, Any]] = []
+        for i, doc_id in enumerate(result.get("ids", [])):
+            out.append(
+                {
+                    "id": doc_id,
+                    "text": result["documents"][i] if result.get("documents") else "",
+                    "metadata": result["metadatas"][i] if result.get("metadatas") else {},
+                }
+            )
+        return out

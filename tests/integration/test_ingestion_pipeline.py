@@ -85,6 +85,16 @@ class FakeVectorStore(BaseVectorStore):
     ) -> dict[str, Any]:
         return {"doc_count": len(self._records)}
 
+    def get_all(
+        self,
+        *,
+        collection: str = "default",
+    ) -> list[dict[str, Any]]:
+        return [
+            {"id": rid, "text": rec.text, "metadata": rec.metadata}
+            for rid, rec in self._records.items()
+        ]
+
 
 def _make_settings(tmp_path: Path) -> Settings:
     """Create minimal Settings for pipeline testing."""

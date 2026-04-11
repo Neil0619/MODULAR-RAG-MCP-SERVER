@@ -81,3 +81,12 @@ class BaseVectorStore(ABC):
     ) -> dict[str, Any]:
         """Return stats for a collection (doc_count, etc.)."""
         ...
+
+    @abstractmethod
+    def get_all(
+        self,
+        *,
+        collection: str = "default",
+    ) -> list[dict[str, Any]]:
+        """Return all records in a collection as ``[{id, text, metadata}]``."""
+        ...

@@ -165,6 +165,56 @@ class BM25Indexer:
         ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
         return ranked[:top_k]
 
+    def remove_chunks(self, chunk_ids: list[str]) -> int:
+        """Remove all postings for the given chunk IDs.
+
+        After removal, stale terms (no remaining postings) are pruned and
+        the metadata (N, avg_dl) is recalculated.
+
+        Args:
+            chunk_ids: IDs of chunks to remove from the index.
+
+        Returns:
+            Total number of postings removed.
+        """
+        if not chunk_ids:
+            return 0
+
+        id_set = set(chunk_ids)
+        removed = 0
+        stale_terms: list[str] = []
+
+        terms = self._index.get("terms", {})
+        for term, entry in list(terms.items()):
+            original = entry["postings"]
+            filtered = [p for p in original if p["id"] not in id_set]
+            removed += len(original) - len(filtered)
+            if filtered:
+                entry["postings"] = filtered
+                # Recompute IDF
+                N = self._index["metadata"].get("N", 0) - len(chunk_ids)
+                df = len(filtered)
+                entry["idf"] = math.log((N - df + 0.5) / (df + 0.5) + 1.0)
+            else:
+                stale_terms.append(term)
+
+        for term in stale_terms:
+            terms.pop(term, None)
+
+        # Recalculate metadata
+        all_postings = []
+        for entry in terms.values():
+            all_postings.extend(entry["postings"])
+
+        self._index["metadata"] = {
+            "N": len({p["id"] for p in all_postings}),
+            "avg_dl": (sum(p["dl"] for p in all_postings) / len(all_postings))
+            if all_postings
+            else 0.0,
+        }
+
+        return removed
+
     @property
     def term_count(self) -> int:
         """Number of unique terms in the index."""

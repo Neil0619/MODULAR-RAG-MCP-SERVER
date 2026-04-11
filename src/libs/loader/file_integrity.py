@@ -56,6 +56,16 @@ class FileIntegrityChecker(ABC):
         """Record a failed ingestion."""
         ...
 
+    @abstractmethod
+    def remove_record(self, file_hash: str) -> bool:
+        """Remove a record by hash. Returns True if a row was deleted."""
+        ...
+
+    @abstractmethod
+    def list_processed(self) -> list[dict[str, Any]]:
+        """Return all successfully processed records as dicts."""
+        ...
+
 
 class SQLiteIntegrityChecker(FileIntegrityChecker):
     """SQLite-backed file integrity tracker.
@@ -134,6 +144,25 @@ class SQLiteIntegrityChecker(FileIntegrityChecker):
             (file_hash, "", error_msg, now),
         )
         self._conn.commit()
+
+    def remove_record(self, file_hash: str) -> bool:
+        """Delete a record by hash. Returns True if a row was removed."""
+        cursor = self._conn.execute(
+            "DELETE FROM ingestion_history WHERE file_hash = ?",
+            (file_hash,),
+        )
+        self._conn.commit()
+        return cursor.rowcount > 0
+
+    def list_processed(self) -> list[dict[str, Any]]:
+        """Return all successfully processed records."""
+        rows = self._conn.execute(
+            "SELECT file_hash, file_path, ingested_at FROM ingestion_history WHERE status = 'success' ORDER BY ingested_at DESC"
+        ).fetchall()
+        return [
+            {"file_hash": r[0], "file_path": r[1], "ingested_at": r[2]}
+            for r in rows
+        ]
 
     def close(self) -> None:
         """Close the database connection."""

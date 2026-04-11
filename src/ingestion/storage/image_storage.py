@@ -167,6 +167,40 @@ class ImageStorage:
         ).fetchone()
         return row is not None
 
+    def delete_by_doc_hash(self, doc_hash: str, collection: str) -> int:
+        """Delete all images for a document in a given collection.
+
+        Removes both the database index entries and the physical files.
+
+        Args:
+            doc_hash: Document hash to match.
+            collection: Collection scope.
+
+        Returns:
+            Number of images deleted.
+        """
+        rows = self._conn.execute(
+            "SELECT image_id, file_path FROM image_index WHERE doc_hash = ? AND collection = ?",
+            (doc_hash, collection),
+        ).fetchall()
+
+        if not rows:
+            return 0
+
+        for image_id, file_path in rows:
+            # Delete physical file
+            p = Path(file_path)
+            if p.exists():
+                p.unlink()
+            # Delete index entry
+            self._conn.execute(
+                "DELETE FROM image_index WHERE image_id = ?",
+                (image_id,),
+            )
+
+        self._conn.commit()
+        return len(rows)
+
     def close(self) -> None:
         """Close the database connection."""
         self._conn.close()
