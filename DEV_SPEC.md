@@ -2008,7 +2008,7 @@ dashboard:
 | 任务编号 | 任务名称 | 状态 | 完成日期 | 备注 |
 |---------|---------|------|---------|------|
 | D1 | QueryProcessor（关键词提取 + filters） | [x] | 2026-04-10 | QueryProcessor+ProcessedQuery+中英文分词+19单元测试 |
-| D2 | DenseRetriever（调用 VectorStore.query） | [ ] | | |
+| D2 | DenseRetriever（调用 VectorStore.query） | [x] | 2026-04-11 | DenseRetriever+RetrievalResult+依赖注入+10单元测试 |
 | D3 | SparseRetriever（BM25 查询） | [ ] | | |
 | D4 | RRF Fusion | [ ] | | |
 | D5 | HybridSearch 编排 | [ ] | | |
@@ -2076,13 +2076,13 @@ dashboard:
 | 阶段 A | 3 | 3 | 100% |
 | 阶段 B | 17 | 17 | 100% |
 | 阶段 C | 15 | 15 | 100% |
-| 阶段 D | 7 | 1 | 14% |
+| 阶段 D | 7 | 2 | 29% |
 | 阶段 E | 6 | 0 | 0% |
 | 阶段 F | 5 | 0 | 0% |
 | 阶段 G | 6 | 0 | 0% |
 | 阶段 H | 5 | 0 | 0% |
 | 阶段 I | 5 | 0 | 0% |
-| **总计** | **69** | **36** | **52%** |
+| **总计** | **69** | **37** | **54%** |
 
 
 ---

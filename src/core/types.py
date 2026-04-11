@@ -230,3 +230,44 @@ class ProcessedQuery:
             keywords=data.get("keywords", []),
             filters=data.get("filters", {}),
         )
+
+
+@dataclass
+class RetrievalResult:
+    """A single result from the retrieval pipeline.
+
+    Produced by DenseRetriever / SparseRetriever and consumed by
+    HybridSearch (fusion) and the MCP tools layer.
+
+    Attributes:
+        chunk_id: ID of the matching chunk.
+        score: Relevance score (higher is better).
+        text: Chunk text content.
+        metadata: Full chunk metadata (source_path, tags, etc.).
+        source: Which retriever produced this result (e.g. "dense", "sparse").
+    """
+
+    chunk_id: str = ""
+    score: float = 0.0
+    text: str = ""
+    metadata: dict[str, Any] = field(default_factory=dict)
+    source: str = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "chunk_id": self.chunk_id,
+            "score": self.score,
+            "text": self.text,
+            "metadata": self.metadata,
+            "source": self.source,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> RetrievalResult:
+        return cls(
+            chunk_id=data.get("chunk_id", ""),
+            score=data.get("score", 0.0),
+            text=data.get("text", ""),
+            metadata=data.get("metadata", {}),
+            source=data.get("source", ""),
+        )
