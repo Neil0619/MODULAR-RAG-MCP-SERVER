@@ -2010,7 +2010,7 @@ dashboard:
 | D1 | QueryProcessor（关键词提取 + filters） | [x] | 2026-04-10 | QueryProcessor+ProcessedQuery+中英文分词+19单元测试 |
 | D2 | DenseRetriever（调用 VectorStore.query） | [x] | 2026-04-11 | DenseRetriever+RetrievalResult+依赖注入+10单元测试 |
 | D3 | SparseRetriever（BM25 查询） | [x] | 2026-04-11 | SparseRetriever+BM25Indexer.load/query+get_by_ids+13单元测试 |
-| D4 | RRF Fusion | [ ] | | |
+| D4 | RRF Fusion | [x] | 2026-04-11 | reciprocal_rank_fusion纯函数+dedup+13单元测试 |
 | D5 | HybridSearch 编排 | [ ] | | |
 | D6 | Reranker（Core 层编排 + Fallback） | [ ] | | |
 | D7 | 脚本入口 query.py（查询可用） | [ ] | | |
@@ -2076,13 +2076,13 @@ dashboard:
 | 阶段 A | 3 | 3 | 100% |
 | 阶段 B | 17 | 17 | 100% |
 | 阶段 C | 15 | 15 | 100% |
-| 阶段 D | 7 | 3 | 43% |
+| 阶段 D | 7 | 4 | 57% |
 | 阶段 E | 6 | 0 | 0% |
 | 阶段 F | 5 | 0 | 0% |
 | 阶段 G | 6 | 0 | 0% |
 | 阶段 H | 5 | 0 | 0% |
 | 阶段 I | 5 | 0 | 0% |
-| **总计** | **69** | **38** | **55%** |
+| **总计** | **69** | **39** | **57%** |
 
 
 ---
