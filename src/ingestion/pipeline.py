@@ -48,7 +48,7 @@ class IngestionPipeline:
     def __init__(self, settings: Settings, collection: str = "default") -> None:
         self._settings = settings
         self._collection = collection
-        self._trace = TraceContext()
+        self._trace = TraceContext(trace_type="ingestion")
 
     @property
     def trace(self) -> TraceContext:
@@ -90,9 +90,11 @@ class IngestionPipeline:
         # Stage 2: Load
         try:
             logger.info("Loading: %s", path)
+            self._trace.start_stage("load")
             loader = PdfLoader()
             document = loader.load(str(path))
             summary["stages"]["load"] = {
+                "method": "markitdown",
                 "text_length": len(document.text),
                 "page_count": document.metadata.get("page_count", 0),
                 "image_count": len(document.metadata.get("images", [])),
@@ -104,9 +106,13 @@ class IngestionPipeline:
         # Stage 3: Split
         try:
             logger.info("Splitting document into chunks")
+            self._trace.start_stage("split")
             chunker = DocumentChunker(self._settings)
             chunks = chunker.split_document(document)
-            summary["stages"]["split"] = {"chunk_count": len(chunks)}
+            summary["stages"]["split"] = {
+                "method": "recursive",
+                "chunk_count": len(chunks),
+            }
             self._trace.record_stage("split", summary["stages"]["split"])
         except Exception as exc:
             raise PipelineError(f"Split stage failed: {exc}") from exc
@@ -118,6 +124,7 @@ class IngestionPipeline:
         # Stage 4: Transform (refine → enrich → caption)
         try:
             logger.info("Transforming chunks")
+            self._trace.start_stage("transform")
             refiner = ChunkRefiner(self._settings)
             chunks = refiner.transform(chunks, trace=self._trace)
 
@@ -128,16 +135,20 @@ class IngestionPipeline:
             chunks = captioner.transform(chunks, trace=self._trace)
 
             summary["stages"]["transform"] = {"chunk_count": len(chunks)}
-            self._trace.record_stage("transform", {"chunk_count": len(chunks)})
+            self._trace.record_stage("transform", summary["stages"]["transform"])
         except Exception as exc:
             raise PipelineError(f"Transform stage failed: {exc}") from exc
 
         # Stage 5: Encode (dense + sparse)
         try:
             logger.info("Encoding chunks (dense + sparse)")
+            self._trace.start_stage("encode")
             processor = BatchProcessor(self._settings)
             records = processor.process(chunks, trace=self._trace)
-            summary["stages"]["encode"] = {"record_count": len(records)}
+            summary["stages"]["encode"] = {
+                "record_count": len(records),
+                "method": "dense+sparse",
+            }
             self._trace.record_stage("encode", summary["stages"]["encode"])
         except Exception as exc:
             raise PipelineError(f"Encode stage failed: {exc}") from exc
@@ -145,9 +156,10 @@ class IngestionPipeline:
         # Stage 6: Store (vectors + BM25)
         try:
             logger.info("Storing vectors and BM25 index")
+            self._trace.start_stage("store")
             upserter = VectorUpserter(self._settings)
             upserted = upserter.upsert(records, collection=self._collection)
-            summary["stages"]["store"] = {"upserted": upserted}
+            summary["stages"]["store"] = {"method": "chroma", "upserted": upserted}
 
             indexer = BM25Indexer()
             indexer.build(records)
@@ -162,5 +174,6 @@ class IngestionPipeline:
             checker = SQLiteIntegrityChecker()
             checker.mark_success(summary["file_hash"], str(path), chunks=len(chunks))
 
+        self._trace.finish()
         logger.info("Pipeline complete: %d chunks ingested", len(chunks))
         return summary

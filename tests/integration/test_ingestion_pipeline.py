@@ -258,7 +258,7 @@ class TestIngestionPipeline:
         assert summary["stages"].get("skip_reason") == "no_chunks"
 
     def test_trace_context_populated(self, setup: dict) -> None:
-        """Pipeline records stages in TraceContext."""
+        """Pipeline records stages in TraceContext with elapsed_ms."""
         pipeline: IngestionPipeline = setup["pipeline"]
 
         if not SIMPLE_PDF.exists():
@@ -267,8 +267,29 @@ class TestIngestionPipeline:
         pipeline.run(str(SIMPLE_PDF), force=True)
 
         trace = pipeline.trace
-        # Trace should have recorded at least load and split stages
-        assert len(trace.stages) > 0
+        assert trace.trace_type == "ingestion"
+
+        # All 5 stages should be present
         stage_names = list(trace.stages.keys())
-        assert "load" in stage_names
-        assert "split" in stage_names
+        for expected in ("load", "split", "transform", "encode", "store"):
+            assert expected in stage_names, f"Missing stage: {expected}"
+
+        # Each stage should have elapsed_ms and method
+        for name, data in trace.stages.items():
+            assert isinstance(data, dict), f"Stage {name} data is not a dict"
+            assert "elapsed_ms" in data, f"Stage {name} missing elapsed_ms"
+
+        # Check specific method fields
+        assert trace.stages["load"]["method"] == "markitdown"
+        assert trace.stages["split"]["method"] == "recursive"
+        assert trace.stages["encode"]["method"] == "dense+sparse"
+        assert trace.stages["store"]["method"] == "chroma"
+
+        # Trace should be finished
+        assert trace.finished_at is not None
+
+        # to_dict should be JSON-serialisable
+        import json
+        d = trace.to_dict()
+        assert d["trace_type"] == "ingestion"
+        json.dumps(d)  # no error
