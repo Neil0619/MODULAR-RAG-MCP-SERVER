@@ -2043,7 +2043,7 @@ dashboard:
 | G1 | Dashboard 基础架构与系统总览页 | [x] | 2026-04-12 | Streamlit多页面+ConfigService+Overview页+11单元测试 |
 | G2 | DocumentManager 实现 | [x] | 2026-04-12 | DocumentManager+跨存储协调删除+24单元测试 |
 | G3 | 数据浏览器页面 | [x] | 2026-04-12 | DataService+data_browser页+文档列表/Chunk详情/图片预览+18单元测试 |
-| G4 | Ingestion 管理页面 | [ ] | | |
+| G4 | Ingestion 管理页面 | [x] | 2026-04-12 | ingestion_manager页+文件上传+进度条+文档删除 |
 | G5 | Ingestion 追踪页面 | [ ] | | |
 | G6 | Query 追踪页面 | [ ] | | |
 
@@ -2079,10 +2079,10 @@ dashboard:
 | 阶段 D | 7 | 7 | 100% |
 | 阶段 E | 6 | 6 | 100% |
 | 阶段 F | 5 | 5 | 100% |
-| 阶段 G | 6 | 3 | 50% |
+| 阶段 G | 6 | 4 | 67% |
 | 阶段 H | 5 | 0 | 0% |
 | 阶段 I | 5 | 0 | 0% |
-| **总计** | **69** | **56** | **81%** |
+| **总计** | **69** | **57** | **83%** |
 
 
 ---

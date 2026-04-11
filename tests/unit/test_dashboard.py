@@ -115,6 +115,10 @@ class TestDashboardImports:
         from observability.dashboard.pages.data_browser import render
         assert callable(render)
 
+    def test_import_ingestion_manager(self) -> None:
+        from observability.dashboard.pages.ingestion_manager import render
+        assert callable(render)
+
     def test_start_dashboard_script_exists(self) -> None:
         script = Path(__file__).resolve().parents[2] / "scripts" / "start_dashboard.py"
         assert script.exists()

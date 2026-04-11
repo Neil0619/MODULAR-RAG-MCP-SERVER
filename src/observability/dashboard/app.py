@@ -9,6 +9,7 @@ import streamlit as st
 
 from observability.dashboard.pages.overview import render as render_overview
 from observability.dashboard.pages.data_browser import render as render_data_browser
+from observability.dashboard.pages.ingestion_manager import render as render_ingestion_manager
 from observability.dashboard.pages.placeholder import render_placeholder
 
 
@@ -38,7 +39,7 @@ def main() -> None:
     elif page == "Data Browser":
         render_data_browser()
     elif page == "Ingestion Manager":
-        render_placeholder("Ingestion Manager", "Will be implemented in G4.")
+        render_ingestion_manager()
     elif page == "Ingestion Traces":
         render_placeholder("Ingestion Traces", "Will be implemented in G5.")
     elif page == "Query Traces":
