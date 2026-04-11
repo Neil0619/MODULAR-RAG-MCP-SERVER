@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Callable
 
 from core.trace.trace_context import TraceContext
 from core.types import Document
@@ -54,12 +54,20 @@ class IngestionPipeline:
     def trace(self) -> TraceContext:
         return self._trace
 
-    def run(self, file_path: str, force: bool = False) -> dict[str, Any]:
+    def run(
+        self,
+        file_path: str,
+        force: bool = False,
+        on_progress: Callable[[str, int, int], None] | None = None,
+    ) -> dict[str, Any]:
         """Execute the full ingestion pipeline for a single file.
 
         Args:
             file_path: Path to the document file (PDF).
             force: Skip integrity check and re-ingest.
+            on_progress: Optional callback ``(stage_name, current, total)``
+                invoked at the end of each stage.  When *None*, no callback
+                is made (existing behaviour unchanged).
 
         Returns:
             Summary dict with stats from each stage.
@@ -76,6 +84,16 @@ class IngestionPipeline:
             "collection": self._collection,
             "stages": {},
         }
+
+        # Total number of main stages (used for progress reporting)
+        _TOTAL_STAGES = 5
+        _stage_index = 0
+
+        def _advance(stage_name: str) -> None:
+            nonlocal _stage_index
+            _stage_index += 1
+            if on_progress is not None:
+                on_progress(stage_name, _stage_index, _TOTAL_STAGES)
 
         # Stage 1: Integrity check
         if not force:
@@ -100,6 +118,7 @@ class IngestionPipeline:
                 "image_count": len(document.metadata.get("images", [])),
             }
             self._trace.record_stage("load", summary["stages"]["load"])
+            _advance("load")
         except Exception as exc:
             raise PipelineError(f"Load stage failed: {exc}") from exc
 
@@ -114,6 +133,7 @@ class IngestionPipeline:
                 "chunk_count": len(chunks),
             }
             self._trace.record_stage("split", summary["stages"]["split"])
+            _advance("split")
         except Exception as exc:
             raise PipelineError(f"Split stage failed: {exc}") from exc
 
@@ -136,6 +156,7 @@ class IngestionPipeline:
 
             summary["stages"]["transform"] = {"chunk_count": len(chunks)}
             self._trace.record_stage("transform", summary["stages"]["transform"])
+            _advance("transform")
         except Exception as exc:
             raise PipelineError(f"Transform stage failed: {exc}") from exc
 
@@ -150,6 +171,7 @@ class IngestionPipeline:
                 "method": "dense+sparse",
             }
             self._trace.record_stage("encode", summary["stages"]["encode"])
+            _advance("encode")
         except Exception as exc:
             raise PipelineError(f"Encode stage failed: {exc}") from exc
 
@@ -166,6 +188,7 @@ class IngestionPipeline:
             indexer.save(self._collection)
             summary["stages"]["store"]["bm25_terms"] = indexer.term_count
             self._trace.record_stage("store", summary["stages"]["store"])
+            _advance("store")
         except Exception as exc:
             raise PipelineError(f"Store stage failed: {exc}") from exc
 
