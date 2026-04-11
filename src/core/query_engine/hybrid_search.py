@@ -77,7 +77,15 @@ class HybridSearch:
             List of RetrievalResult sorted by fused score descending.
         """
         # Stage 1: Query processing
+        if trace:
+            trace.start_stage("query_processing")
         processed = self._query_processor.process(query, filters=filters)
+        if trace:
+            trace.record_stage("query_processing", {
+                "method": "rule_based",
+                "keywords": processed.keywords,
+                "original_query": processed.original_query,
+            })
 
         retrieval_cfg = self._settings.retrieval
         dense_top_k = retrieval_cfg.top_k_dense
@@ -86,6 +94,8 @@ class HybridSearch:
         # Stage 2: Dense + Sparse retrieval (with graceful degradation)
         result_lists: list[list[RetrievalResult]] = []
 
+        if trace:
+            trace.start_stage("dense_retrieval")
         dense_results = self._safe_dense_retrieve(
             processed.original_query,
             top_k=dense_top_k,
@@ -95,7 +105,14 @@ class HybridSearch:
         )
         if dense_results:
             result_lists.append(dense_results)
+        if trace:
+            trace.record_stage("dense_retrieval", {
+                "method": "embedding",
+                "hit_count": len(dense_results),
+            })
 
+        if trace:
+            trace.start_stage("sparse_retrieval")
         sparse_results = self._safe_sparse_retrieve(
             processed.keywords,
             top_k=sparse_top_k,
@@ -104,16 +121,29 @@ class HybridSearch:
         )
         if sparse_results:
             result_lists.append(sparse_results)
+        if trace:
+            trace.record_stage("sparse_retrieval", {
+                "method": "bm25",
+                "hit_count": len(sparse_results),
+            })
 
         if not result_lists:
             return []
 
         # Stage 3: RRF Fusion
+        if trace:
+            trace.start_stage("fusion")
         fused = reciprocal_rank_fusion(
             result_lists,
             k=retrieval_cfg.rrf_k,
             top_k=top_k * 3,  # over-fetch before filtering
         )
+        if trace:
+            trace.record_stage("fusion", {
+                "algorithm": "rrf",
+                "rrf_k": retrieval_cfg.rrf_k,
+                "result_count": len(fused),
+            })
 
         # Stage 4: Metadata post-filtering
         if filters:

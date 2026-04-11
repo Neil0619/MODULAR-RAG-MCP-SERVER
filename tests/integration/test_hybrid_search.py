@@ -12,15 +12,19 @@ import pytest
 
 from core.query_engine.hybrid_search import HybridSearch
 from core.query_engine.query_processor import QueryProcessor
+from core.query_engine.reranker import Reranker
 from core.settings import (
     EmbeddingSettings,
     LLMSettings,
     RetrievalSettings,
+    RerankSettings,
     Settings,
     SplitterSettings,
     VectorStoreSettings,
 )
+from core.trace.trace_context import TraceContext
 from core.types import RetrievalResult
+from libs.reranker.base_reranker import BaseReranker, RerankCandidate
 from libs.vector_store.base_vector_store import QueryResult
 
 
@@ -162,3 +166,144 @@ class TestHybridSearch:
         chunk_ids = [r.chunk_id for r in results]
         # No duplicates
         assert len(chunk_ids) == len(set(chunk_ids))
+
+
+class TestHybridSearchTracing:
+    """Tests for trace instrumentation in HybridSearch (F3)."""
+
+    @pytest.fixture()
+    def traced_setup(self) -> dict:
+        dense_results = [
+            _rr("c1", 0.95, "Dense one", "dense", {"source_path": "a.pdf"}),
+            _rr("c2", 0.85, "Dense two", "dense", {"source_path": "b.pdf"}),
+        ]
+        sparse_results = [
+            _rr("c2", 3.5, "Sparse two", "sparse", {"source_path": "b.pdf"}),
+            _rr("c3", 2.0, "Sparse three", "sparse", {"source_path": "c.pdf"}),
+        ]
+        settings = _make_settings()
+        dense = _make_mock_dense(dense_results)
+        sparse = _make_mock_sparse(sparse_results)
+        qp = QueryProcessor()
+        trace = TraceContext(trace_type="query")
+
+        hs = HybridSearch(
+            settings=settings,
+            query_processor=qp,
+            dense_retriever=dense,
+            sparse_retriever=sparse,
+        )
+        return {"hs": hs, "trace": trace, "settings": settings}
+
+    def test_trace_records_query_processing(self, traced_setup: dict) -> None:
+        trace: TraceContext = traced_setup["trace"]
+        traced_setup["hs"].search("test query", trace=trace)
+
+        assert "query_processing" in trace.stages
+        stage = trace.stages["query_processing"]
+        assert stage["method"] == "rule_based"
+        assert "keywords" in stage
+        assert "elapsed_ms" in stage
+
+    def test_trace_records_dense_retrieval(self, traced_setup: dict) -> None:
+        trace: TraceContext = traced_setup["trace"]
+        traced_setup["hs"].search("test query", trace=trace)
+
+        assert "dense_retrieval" in trace.stages
+        stage = trace.stages["dense_retrieval"]
+        assert stage["method"] == "embedding"
+        assert "hit_count" in stage
+        assert "elapsed_ms" in stage
+
+    def test_trace_records_sparse_retrieval(self, traced_setup: dict) -> None:
+        trace: TraceContext = traced_setup["trace"]
+        traced_setup["hs"].search("test query", trace=trace)
+
+        assert "sparse_retrieval" in trace.stages
+        stage = trace.stages["sparse_retrieval"]
+        assert stage["method"] == "bm25"
+        assert "hit_count" in stage
+        assert "elapsed_ms" in stage
+
+    def test_trace_records_fusion(self, traced_setup: dict) -> None:
+        trace: TraceContext = traced_setup["trace"]
+        traced_setup["hs"].search("test query", trace=trace)
+
+        assert "fusion" in trace.stages
+        stage = trace.stages["fusion"]
+        assert stage["algorithm"] == "rrf"
+        assert "rrf_k" in stage
+        assert "result_count" in stage
+        assert "elapsed_ms" in stage
+
+    def test_trace_type_is_query(self, traced_setup: dict) -> None:
+        trace: TraceContext = traced_setup["trace"]
+        traced_setup["hs"].search("test query", trace=trace)
+
+        assert trace.trace_type == "query"
+        d = trace.to_dict()
+        assert d["trace_type"] == "query"
+
+    def test_no_trace_still_works(self, traced_setup: dict) -> None:
+        # Passing trace=None should not break anything
+        results = traced_setup["hs"].search("test query", trace=None)
+        assert len(results) > 0
+
+
+class TestRerankerTracing:
+    """Tests for trace instrumentation in Reranker (F3)."""
+
+    def test_rerank_traces_success(self) -> None:
+        settings = Settings(
+            llm=LLMSettings(provider="openai", model="gpt-4o", api_key="fake"),
+            embedding=EmbeddingSettings(provider="openai", model="text-embedding-3-small", api_key="fake"),
+            splitter=SplitterSettings(),
+            vector_store=VectorStoreSettings(backend="chroma"),
+            retrieval=RetrievalSettings(),
+            rerank=RerankSettings(backend="none"),
+        )
+
+        class FakeBackend(BaseReranker):
+            def rerank(self, query, candidates, *, top_k=10, trace=None):
+                return candidates[:top_k]
+
+        reranker = Reranker(settings, backend=FakeBackend())
+        trace = TraceContext(trace_type="query")
+
+        results = [
+            RetrievalResult(chunk_id="c1", score=0.9, text="text", metadata={}, source="fusion"),
+            RetrievalResult(chunk_id="c2", score=0.8, text="text", metadata={}, source="fusion"),
+        ]
+        reranker.rerank("query", results, trace=trace)
+
+        assert "rerank" in trace.stages
+        stage = trace.stages["rerank"]
+        assert stage["method"] == "none"
+        assert "input_count" in stage
+        assert "elapsed_ms" in stage
+
+    def test_rerank_traces_fallback(self) -> None:
+        settings = Settings(
+            llm=LLMSettings(provider="openai", model="gpt-4o", api_key="fake"),
+            embedding=EmbeddingSettings(provider="openai", model="text-embedding-3-small", api_key="fake"),
+            splitter=SplitterSettings(),
+            vector_store=VectorStoreSettings(backend="chroma"),
+            retrieval=RetrievalSettings(),
+            rerank=RerankSettings(backend="cross_encoder"),
+        )
+
+        class FailingBackend(BaseReranker):
+            def rerank(self, query, candidates, *, top_k=10, trace=None):
+                raise RuntimeError("model not loaded")
+
+        reranker = Reranker(settings, backend=FailingBackend())
+        trace = TraceContext(trace_type="query")
+
+        results = [
+            RetrievalResult(chunk_id="c1", score=0.9, text="text", metadata={}, source="fusion"),
+        ]
+        reranker.rerank("query", results, trace=trace)
+
+        assert "rerank" in trace.stages
+        stage = trace.stages["rerank"]
+        assert stage["fallback"] is True

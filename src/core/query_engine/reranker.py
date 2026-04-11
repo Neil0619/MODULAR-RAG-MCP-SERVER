@@ -74,9 +74,12 @@ class Reranker:
             for r in results
         ]
 
+        if trace:
+            trace.start_stage("rerank")
+
         try:
             reranked = self._backend.rerank(query, candidates, top_k=top_k, trace=trace)
-            return [
+            reranked_results = [
                 RetrievalResult(
                     chunk_id=c.id,
                     score=c.score,
@@ -86,8 +89,21 @@ class Reranker:
                 )
                 for c in reranked
             ]
+            if trace:
+                trace.record_stage("rerank", {
+                    "method": self._settings.rerank.backend,
+                    "input_count": len(candidates),
+                    "output_count": len(reranked_results),
+                })
+            return reranked_results
         except Exception:
             logger.warning("Reranker backend failed, using fusion ranking as fallback", exc_info=True)
+            if trace:
+                trace.record_stage("rerank", {
+                    "method": self._settings.rerank.backend,
+                    "fallback": True,
+                    "input_count": len(candidates),
+                })
             return [
                 RetrievalResult(
                     chunk_id=r.chunk_id,
