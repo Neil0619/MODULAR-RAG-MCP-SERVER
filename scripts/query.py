@@ -26,6 +26,8 @@ from core.query_engine.hybrid_search import HybridSearch
 from core.query_engine.query_processor import QueryProcessor
 from core.query_engine.reranker import Reranker
 from core.settings import load_settings
+from core.trace.trace_context import TraceContext
+from core.trace.trace_collector import TraceCollector
 from core.types import RetrievalResult
 
 
@@ -111,6 +113,9 @@ def main(argv: list[str] | None = None) -> int:
     qp = QueryProcessor()
     hybrid = HybridSearch(settings, query_processor=qp)
     reranker = Reranker(settings) if not args.no_rerank else None
+    collector = TraceCollector()
+
+    trace = TraceContext(trace_type="query")
 
     if args.verbose:
         pq = qp.process(args.query)
@@ -122,6 +127,7 @@ def main(argv: list[str] | None = None) -> int:
         args.query,
         top_k=args.top_k,
         collection=args.collection,
+        trace=trace,
     )
 
     if not results:
@@ -135,12 +141,16 @@ def main(argv: list[str] | None = None) -> int:
 
     # Stage 2: Reranking (optional)
     if reranker is not None:
-        results = reranker.rerank(args.query, results, top_k=args.top_k)
+        results = reranker.rerank(args.query, results, top_k=args.top_k, trace=trace)
         if args.verbose:
             fb = sum(1 for r in results if r.metadata.get("fallback"))
             print(f"\n--- Reranked: {len(results)} results", file=sys.stderr)
             if fb:
                 print(f"    (fallback: {fb} results)", file=sys.stderr)
+
+    # Persist trace
+    trace.finish()
+    collector.collect(trace)
 
     # Output
     print(f"\n{'='*60}")

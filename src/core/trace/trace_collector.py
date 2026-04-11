@@ -1,8 +1,9 @@
-"""TraceCollector — collect finished traces and trigger persistence.
+"""TraceCollector — collect finished traces and persist to JSON Lines.
 
-Phase F2 will connect this to the JSON Lines logger.  For now the
-collector simply accumulates traces in memory so tests can verify
-the data flow.
+When :meth:`collect` is called, the trace is serialised and written
+to ``logs/traces.jsonl`` via :func:`observability.logger.write_trace`.
+Collected traces are also kept in memory for callers that need
+synchronous access (e.g. tests).
 """
 
 from __future__ import annotations
@@ -16,22 +17,25 @@ logger = logging.getLogger(__name__)
 
 
 class TraceCollector:
-    """Collects finished :class:`TraceContext` objects.
+    """Collects finished :class:`TraceContext` objects and persists them.
 
     Usage::
 
         collector = TraceCollector()
-        collector.collect(trace)       # trace.finish() should already be called
+        collector.collect(trace)       # auto-finishes + writes to traces.jsonl
     """
 
-    def __init__(self) -> None:
+    def __init__(self, *, persist: bool = True) -> None:
         self._traces: list[dict[str, Any]] = []
+        self._persist = persist
 
     def collect(self, trace: TraceContext) -> None:
-        """Collect a finished trace.
+        """Collect a finished trace and persist it.
 
         If the trace has not been finished, :meth:`finish` is called
-        automatically before serialisation.
+        automatically before serialisation.  The serialised dict is then
+        written to ``logs/traces.jsonl`` (unless *persist* was set to
+        ``False`` at construction time).
         """
         if trace._finished_at is None:
             trace.finish()
@@ -39,6 +43,10 @@ class TraceCollector:
         trace_dict = trace.to_dict()
         self._traces.append(trace_dict)
         logger.debug("Trace collected: %s (%s)", trace.trace_id, trace.trace_type)
+
+        if self._persist:
+            from observability.logger import write_trace
+            write_trace(trace_dict)
 
     @property
     def traces(self) -> list[dict[str, Any]]:

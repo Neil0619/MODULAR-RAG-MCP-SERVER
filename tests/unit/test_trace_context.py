@@ -162,7 +162,7 @@ class TestTraceCollector:
     """Tests for TraceCollector."""
 
     def test_collect_finished_trace(self) -> None:
-        collector = TraceCollector()
+        collector = TraceCollector(persist=False)
         t = TraceContext(trace_type="query")
         t.record_stage("dense", {"top_k": 10}, elapsed_ms=5.0)
         t.finish()
@@ -172,14 +172,14 @@ class TestTraceCollector:
         assert collector.traces[0]["trace_type"] == "query"
 
     def test_collect_auto_finishes(self) -> None:
-        collector = TraceCollector()
+        collector = TraceCollector(persist=False)
         t = TraceContext()
         assert t.finished_at is None
         collector.collect(t)
         assert t.finished_at is not None
 
     def test_multiple_traces(self) -> None:
-        collector = TraceCollector()
+        collector = TraceCollector(persist=False)
         for i in range(5):
             t = TraceContext(trace_type="query")
             t.finish()
@@ -187,7 +187,7 @@ class TestTraceCollector:
         assert len(collector.traces) == 5
 
     def test_clear(self) -> None:
-        collector = TraceCollector()
+        collector = TraceCollector(persist=False)
         collector.collect(TraceContext())
         collector.collect(TraceContext())
         assert len(collector.traces) == 2
@@ -195,11 +195,38 @@ class TestTraceCollector:
         assert len(collector.traces) == 0
 
     def test_traces_returns_copy(self) -> None:
-        collector = TraceCollector()
+        collector = TraceCollector(persist=False)
         collector.collect(TraceContext())
         refs = collector.traces
         refs.clear()
         assert len(collector.traces) == 1
+
+    def test_collect_persists_to_file(self, tmp_path) -> None:
+        """collect() writes trace to JSONL file when persist=True."""
+        import json
+        log_file = tmp_path / "traces.jsonl"
+
+        collector = TraceCollector(persist=True)
+        t = TraceContext(trace_type="query")
+        t.record_stage("test_stage", {"method": "test"})
+        t.finish()
+
+        # Monkey-patch write_trace to use our temp file
+        from observability import logger as logger_mod
+        _orig = logger_mod._DEFAULT_TRACE_FILE
+        logger_mod._DEFAULT_TRACE_FILE = str(log_file)
+        try:
+            collector.collect(t)
+        finally:
+            logger_mod._DEFAULT_TRACE_FILE = _orig
+
+        assert log_file.exists()
+        lines = log_file.read_text().strip().split("\n")
+        assert len(lines) == 1
+        envelope = json.loads(lines[0])
+        trace_data = json.loads(envelope["message"])
+        assert trace_data["trace_type"] == "query"
+        assert "test_stage" in trace_data["stages"]
 
 
 # ── Backward compatibility ────────────────────────────────────────

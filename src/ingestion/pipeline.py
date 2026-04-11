@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable
 
 from core.trace.trace_context import TraceContext
+from core.trace.trace_collector import TraceCollector
 from core.types import Document
 from ingestion.chunking.document_chunker import DocumentChunker
 from ingestion.embedding.batch_processor import BatchProcessor
@@ -49,6 +50,7 @@ class IngestionPipeline:
         self._settings = settings
         self._collection = collection
         self._trace = TraceContext(trace_type="ingestion")
+        self._collector = TraceCollector()
 
     @property
     def trace(self) -> TraceContext:
@@ -198,5 +200,6 @@ class IngestionPipeline:
             checker.mark_success(summary["file_hash"], str(path), chunks=len(chunks))
 
         self._trace.finish()
+        self._collector.collect(self._trace)
         logger.info("Pipeline complete: %d chunks ingested", len(chunks))
         return summary

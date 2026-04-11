@@ -11,17 +11,20 @@ from typing import Any
 
 from core.response.response_builder import ResponseBuilder
 from core.settings import load_settings
+from core.trace.trace_context import TraceContext
+from core.trace.trace_collector import TraceCollector
 from core.types import RetrievalResult
 
 # Module-level singletons (initialized lazily)
 _hybrid = None
 _reranker = None
 _settings = None
+_collector = None
 
 
-def _get_components() -> tuple[Any, Any]:
-    """Lazily initialize and cache HybridSearch + Reranker."""
-    global _hybrid, _reranker, _settings
+def _get_components() -> tuple[Any, Any, TraceCollector]:
+    """Lazily initialize and cache HybridSearch + Reranker + TraceCollector."""
+    global _hybrid, _reranker, _settings, _collector
     if _hybrid is None:
         _settings = load_settings()
         from core.query_engine.hybrid_search import HybridSearch
@@ -31,7 +34,8 @@ def _get_components() -> tuple[Any, Any]:
         qp = QueryProcessor()
         _hybrid = HybridSearch(_settings, query_processor=qp)
         _reranker = Reranker(_settings)
-    return _hybrid, _reranker
+        _collector = TraceCollector()
+    return _hybrid, _reranker, _collector
 
 
 async def query_knowledge_hub(
@@ -50,20 +54,27 @@ async def query_knowledge_hub(
     Returns:
         JSON string with ``text`` (Markdown) and ``citations``.
     """
-    hybrid, reranker = _get_components()
+    hybrid, reranker, collector = _get_components()
+
+    trace = TraceContext(trace_type="query")
 
     # Stage 1: Hybrid search (dense + sparse → RRF fusion)
     results: list[RetrievalResult] = hybrid.search(
         query,
         top_k=top_k,
         collection=collection,
+        trace=trace,
     )
 
     # Stage 2: Rerank
     if results:
-        results = reranker.rerank(query, results, top_k=top_k)
+        results = reranker.rerank(query, results, top_k=top_k, trace=trace)
 
     # Stage 3: Build response
     response = ResponseBuilder.build(results, query)
+
+    # Persist trace
+    trace.finish()
+    collector.collect(trace)
 
     return json.dumps(response, ensure_ascii=False)
