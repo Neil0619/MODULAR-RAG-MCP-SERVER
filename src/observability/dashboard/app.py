@@ -8,6 +8,7 @@ from __future__ import annotations
 import streamlit as st
 
 from observability.dashboard.pages.overview import render as render_overview
+from observability.dashboard.pages.data_browser import render as render_data_browser
 from observability.dashboard.pages.placeholder import render_placeholder
 
 
@@ -35,7 +36,7 @@ def main() -> None:
     if page == "System Overview":
         render_overview()
     elif page == "Data Browser":
-        render_placeholder("Data Browser", "Will be implemented in G3.")
+        render_data_browser()
     elif page == "Ingestion Manager":
         render_placeholder("Ingestion Manager", "Will be implemented in G4.")
     elif page == "Ingestion Traces":
