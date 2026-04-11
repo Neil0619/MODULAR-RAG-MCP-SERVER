@@ -2051,7 +2051,7 @@ dashboard:
 
 | 任务编号 | 任务名称 | 状态 | 完成日期 | 备注 |
 |---------|---------|------|---------|------|
-| H1 | RagasEvaluator 实现 | [ ] | | |
+| H1 | RagasEvaluator 实现 | [x] | 2026-04-12 | RagasEvaluator+Faithfulness/AnswerRelevancy/ContextPrecision+19单元测试 |
 | H2 | CompositeEvaluator 实现 | [ ] | | |
 | H3 | EvalRunner + Golden Test Set | [ ] | | |
 | H4 | 评估面板页面 | [ ] | | |
@@ -2080,9 +2080,9 @@ dashboard:
 | 阶段 E | 6 | 6 | 100% |
 | 阶段 F | 5 | 5 | 100% |
 | 阶段 G | 6 | 6 | 100% |
-| 阶段 H | 5 | 0 | 0% |
+| 阶段 H | 5 | 1 | 20% |
 | 阶段 I | 5 | 0 | 0% |
-| **总计** | **69** | **59** | **86%** |
+| **总计** | **69** | **60** | **87%** |
 
 
 ---

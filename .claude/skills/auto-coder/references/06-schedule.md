@@ -92,50 +92,50 @@
 | 任务编号 | 任务名称 | 状态 | 完成日期 | 备注 |
 |---------|---------|------|---------|------|
 | D1 | QueryProcessor（关键词提取 + filters） | [x] | 2026-04-10 | QueryProcessor+ProcessedQuery+中英文分词+19单元测试 |
-| D2 | DenseRetriever（调用 VectorStore.query） | [ ] | | |
-| D3 | SparseRetriever（BM25 查询） | [ ] | | |
-| D4 | RRF Fusion | [ ] | | |
-| D5 | HybridSearch 编排 | [ ] | | |
-| D6 | Reranker（Core 层编排 + Fallback） | [ ] | | |
-| D7 | 脚本入口 query.py（查询可用） | [ ] | | |
+| D2 | DenseRetriever（调用 VectorStore.query） | [x] | 2026-04-11 | DenseRetriever+RetrievalResult+依赖注入+10单元测试 |
+| D3 | SparseRetriever（BM25 查询） | [x] | 2026-04-11 | SparseRetriever+BM25Indexer.load/query+get_by_ids+13单元测试 |
+| D4 | RRF Fusion | [x] | 2026-04-11 | reciprocal_rank_fusion纯函数+dedup+13单元测试 |
+| D5 | HybridSearch 编排 | [x] | 2026-04-11 | HybridSearch编排+元数据过滤+降级策略+11集成测试 |
+| D6 | Reranker（Core 层编排 + Fallback） | [x] | 2026-04-11 | Reranker核心层+失败降级+9单元测试 |
+| D7 | 脚本入口 query.py（查询可用） | [x] | 2026-04-11 | query.py CLI+--verbose+--no-rerank+6 E2E测试 |
 
 #### 阶段 E：MCP Server 层与 Tools
 
 | 任务编号 | 任务名称 | 状态 | 完成日期 | 备注 |
 |---------|---------|------|---------|------|
-| E1 | MCP Server 入口与 Stdio 约束 | [ ] | | |
-| E2 | Protocol Handler 协议解析与能力协商 | [ ] | | |
-| E3 | query_knowledge_hub Tool | [ ] | | |
-| E4 | list_collections Tool | [ ] | | |
-| E5 | get_document_summary Tool | [ ] | | |
-| E6 | 多模态返回组装（Text + Image） | [ ] | | |
+| E1 | MCP Server 入口与 Stdio 约束 | [x] | 2026-04-11 | MCP Server+stdio transport+tool注册+4子进程集成测试 |
+| E2 | Protocol Handler 协议解析与能力协商 | [x] | 2026-04-11 | ProtocolHandler+JSON-RPC 2.0+错误码+15单元测试 |
+| E3 | query_knowledge_hub Tool | [x] | 2026-04-11 | ResponseBuilder+CitationGenerator+HybridSearch+Reranker+10单元测试 |
+| E4 | list_collections Tool | [x] | 2026-04-11 | list_collections+BM25扫描+5单元测试 |
+| E5 | get_document_summary Tool | [x] | 2026-04-11 | get_document_summary+元数据聚合+5单元测试 |
+| E6 | 多模态返回组装（Text + Image） | [x] | 2026-04-11 | MultimodalAssembler+base64编码+MIME检测+10单元测试 |
 
 #### 阶段 F：Trace 基础设施与打点
 
 | 任务编号 | 任务名称 | 状态 | 完成日期 | 备注 |
 |---------|---------|------|---------|------|
-| F1 | TraceContext 增强（finish + 耗时统计 + trace_type） | [ ] | | |
-| F2 | 结构化日志 logger（JSON Lines） | [ ] | | |
-| F3 | 在 Query 链路打点 | [ ] | | |
-| F4 | 在 Ingestion 链路打点 | [ ] | | |
-| F5 | Pipeline 进度回调 (on_progress) | [ ] | | |
+| F1 | TraceContext 增强（finish + 耗时统计 + trace_type） | [x] | 2026-04-11 | TraceContext增强+TraceCollector+30单元测试 |
+| F2 | 结构化日志 logger（JSON Lines） | [x] | 2026-04-11 | JSONFormatter+write_trace+get_trace_logger+10单元测试 |
+| F3 | 在 Query 链路打点 | [x] | 2026-04-12 | HybridSearch+Reranker trace打点+8集成测试 |
+| F4 | 在 Ingestion 链路打点 | [x] | 2026-04-12 | Pipeline trace_type=ingestion+5阶段打点+elapsed_ms+finish |
+| F5 | Pipeline 进度回调 (on_progress) | [x] | 2026-04-12 | on_progress回调+6单元测试 |
 
 #### 阶段 G：可视化管理平台 Dashboard
 
 | 任务编号 | 任务名称 | 状态 | 完成日期 | 备注 |
 |---------|---------|------|---------|------|
-| G1 | Dashboard 基础架构与系统总览页 | [ ] | | |
-| G2 | DocumentManager 实现 | [ ] | | |
-| G3 | 数据浏览器页面 | [ ] | | |
-| G4 | Ingestion 管理页面 | [ ] | | |
-| G5 | Ingestion 追踪页面 | [ ] | | |
-| G6 | Query 追踪页面 | [ ] | | |
+| G1 | Dashboard 基础架构与系统总览页 | [x] | 2026-04-12 | Streamlit多页面+ConfigService+Overview页+11单元测试 |
+| G2 | DocumentManager 实现 | [x] | 2026-04-12 | DocumentManager+跨存储协调删除+24单元测试 |
+| G3 | 数据浏览器页面 | [x] | 2026-04-12 | DataService+data_browser页+文档列表/Chunk详情/图片预览+18单元测试 |
+| G4 | Ingestion 管理页面 | [x] | 2026-04-12 | ingestion_manager页+文件上传+进度条+文档删除 |
+| G5 | Ingestion 追踪页面 | [x] | 2026-04-12 | TraceService+ingestion_traces页+瀑布图+10单元测试 |
+| G6 | Query 追踪页面 | [x] | 2026-04-12 | query_traces页+Dense/Sparse对比+Rerank diff+关键词搜索 |
 
 #### 阶段 H：评估体系
 
 | 任务编号 | 任务名称 | 状态 | 完成日期 | 备注 |
 |---------|---------|------|---------|------|
-| H1 | RagasEvaluator 实现 | [ ] | | |
+| H1 | RagasEvaluator 实现 | [x] | 2026-04-12 | RagasEvaluator+Faithfulness/AnswerRelevancy/ContextPrecision+19单元测试 |
 | H2 | CompositeEvaluator 实现 | [ ] | | |
 | H3 | EvalRunner + Golden Test Set | [ ] | | |
 | H4 | 评估面板页面 | [ ] | | |
@@ -160,13 +160,13 @@
 | 阶段 A | 3 | 3 | 100% |
 | 阶段 B | 17 | 17 | 100% |
 | 阶段 C | 15 | 15 | 100% |
-| 阶段 D | 7 | 1 | 14% |
-| 阶段 E | 6 | 0 | 0% |
-| 阶段 F | 5 | 0 | 0% |
-| 阶段 G | 6 | 0 | 0% |
-| 阶段 H | 5 | 0 | 0% |
+| 阶段 D | 7 | 7 | 100% |
+| 阶段 E | 6 | 6 | 100% |
+| 阶段 F | 5 | 5 | 100% |
+| 阶段 G | 6 | 6 | 100% |
+| 阶段 H | 5 | 1 | 20% |
 | 阶段 I | 5 | 0 | 0% |
-| **总计** | **69** | **36** | **52%** |
+| **总计** | **69** | **60** | **87%** |
 
 
 ---

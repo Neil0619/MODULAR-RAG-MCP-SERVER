@@ -18,8 +18,11 @@ _PROVIDER_REGISTRY: dict[str, str] = {
 class EvaluatorFactory:
     @staticmethod
     def create(settings: Settings) -> BaseEvaluator:
-        from libs.evaluator.custom_evaluator import CustomEvaluator
-        return CustomEvaluator()
+        backends = settings.evaluation.backends if settings else []
+        if not backends:
+            backends = ["custom"]
+        primary = backends[0].lower()
+        return EvaluatorFactory.create_from_name(primary, settings)
 
     @staticmethod
     def create_from_name(name: str, settings: Settings) -> BaseEvaluator:
