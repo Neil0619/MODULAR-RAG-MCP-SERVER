@@ -2024,7 +2024,7 @@ dashboard:
 | E3 | query_knowledge_hub Tool | [x] | 2026-04-11 | ResponseBuilder+CitationGenerator+HybridSearch+Reranker+10单元测试 |
 | E4 | list_collections Tool | [x] | 2026-04-11 | list_collections+BM25扫描+5单元测试 |
 | E5 | get_document_summary Tool | [x] | 2026-04-11 | get_document_summary+元数据聚合+5单元测试 |
-| E6 | 多模态返回组装（Text + Image） | [ ] | | |
+| E6 | 多模态返回组装（Text + Image） | [x] | 2026-04-11 | MultimodalAssembler+base64编码+MIME检测+10单元测试 |
 
 #### 阶段 F：Trace 基础设施与打点
 
@@ -2077,12 +2077,12 @@ dashboard:
 | 阶段 B | 17 | 17 | 100% |
 | 阶段 C | 15 | 15 | 100% |
 | 阶段 D | 7 | 7 | 100% |
-| 阶段 E | 6 | 5 | 83% |
+| 阶段 E | 6 | 6 | 100% |
 | 阶段 F | 5 | 0 | 0% |
 | 阶段 G | 6 | 0 | 0% |
 | 阶段 H | 5 | 0 | 0% |
 | 阶段 I | 5 | 0 | 0% |
-| **总计** | **69** | **47** | **68%** |
+| **总计** | **69** | **48** | **70%** |
 
 
 ---
