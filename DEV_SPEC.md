@@ -2045,7 +2045,7 @@ dashboard:
 | G3 | 数据浏览器页面 | [x] | 2026-04-12 | DataService+data_browser页+文档列表/Chunk详情/图片预览+18单元测试 |
 | G4 | Ingestion 管理页面 | [x] | 2026-04-12 | ingestion_manager页+文件上传+进度条+文档删除 |
 | G5 | Ingestion 追踪页面 | [x] | 2026-04-12 | TraceService+ingestion_traces页+瀑布图+10单元测试 |
-| G6 | Query 追踪页面 | [ ] | | |
+| G6 | Query 追踪页面 | [x] | 2026-04-12 | query_traces页+Dense/Sparse对比+Rerank diff+关键词搜索 |
 
 #### 阶段 H：评估体系
 
@@ -2079,10 +2079,10 @@ dashboard:
 | 阶段 D | 7 | 7 | 100% |
 | 阶段 E | 6 | 6 | 100% |
 | 阶段 F | 5 | 5 | 100% |
-| 阶段 G | 6 | 5 | 83% |
+| 阶段 G | 6 | 6 | 100% |
 | 阶段 H | 5 | 0 | 0% |
 | 阶段 I | 5 | 0 | 0% |
-| **总计** | **69** | **58** | **84%** |
+| **总计** | **69** | **59** | **86%** |
 
 
 ---

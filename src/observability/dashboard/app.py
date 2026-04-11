@@ -11,6 +11,7 @@ from observability.dashboard.pages.overview import render as render_overview
 from observability.dashboard.pages.data_browser import render as render_data_browser
 from observability.dashboard.pages.ingestion_manager import render as render_ingestion_manager
 from observability.dashboard.pages.ingestion_traces import render as render_ingestion_traces
+from observability.dashboard.pages.query_traces import render as render_query_traces
 from observability.dashboard.pages.placeholder import render_placeholder
 
 
@@ -44,7 +45,7 @@ def main() -> None:
     elif page == "Ingestion Traces":
         render_ingestion_traces()
     elif page == "Query Traces":
-        render_placeholder("Query Traces", "Will be implemented in G6.")
+        render_query_traces()
     elif page == "Evaluation Panel":
         render_placeholder("Evaluation Panel", "Will be implemented in H4.")
 
