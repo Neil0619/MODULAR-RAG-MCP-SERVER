@@ -2067,7 +2067,7 @@ dashboard:
 | I4 | 清理接口一致性（契约测试补齐） | [x] | 2026-04-12 | VectorStore/Evaluator/Reranker契约边界测试+17新测试用例 |
 | I5 | 全链路 E2E 验收 | [x] | 2026-04-12 | 751测试全绿+MCP/Eval/Dashboard全链路验证通过 |
 | J1 | LoaderFactory + 文件类型路由 | [x] | 2026-04-13 | LoaderFactory+extension routing+8 loader骨架+12测试 |
-| J2 | 简单文本 Loader（TXT, Markdown） | [ ] | | |
+| J2 | 简单文本 Loader（TXT, Markdown） | [x] | 2026-04-13 | TxtLoader+MarkdownLoader+heading_outline+15契约测试 |
 | J3 | Office 文档 Loader（DOCX, PPTX） | [ ] | | |
 | J4 | 结构化文本 Loader（HTML, CSV） | [ ] | | |
 | J5 | 视频 Loader（Whisper + 关键帧） | [ ] | | |
@@ -2089,8 +2089,8 @@ dashboard:
 | 阶段 G | 6 | 6 | 100% |
 | 阶段 H | 5 | 5 | 100% |
 | 阶段 I | 5 | 5 | 100% |
-| 阶段 J | 7 | 1 | 14% |
-| **总计** | **76** | **70** | **92%** |
+| 阶段 J | 7 | 2 | 29% |
+| **总计** | **76** | **71** | **93%** |
 
 
 ---
