@@ -55,7 +55,10 @@ def render() -> None:
     # --- Recent Activity ---
     st.subheader("Recent Activity")
 
-    trace_file = st.secrets.get("traces_dir", "logs") if hasattr(st, "secrets") else "logs"
+    try:
+        trace_file = st.secrets.get("traces_dir", "logs")
+    except Exception:
+        trace_file = "logs"
     import os
     trace_path = os.path.join(str(trace_file), "traces.jsonl")
 
