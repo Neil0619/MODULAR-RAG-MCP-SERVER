@@ -165,3 +165,6 @@ def _show_previous_results() -> None:
                     [{"Metric": k, "Score": v} for k, v in agg.items()]
                 )
                 st.dataframe(df, use_container_width=True, hide_index=True)
+
+
+render()

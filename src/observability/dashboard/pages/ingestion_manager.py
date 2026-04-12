@@ -180,3 +180,6 @@ def _delete_doc(source_path: str, collection: str) -> None:
         f"{result.chunks_deleted} chunks, "
         f"{result.images_deleted} images removed."
     )
+
+
+render()

@@ -5,49 +5,63 @@ Run with: streamlit run src/observability/dashboard/app.py
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import streamlit as st
 
-from observability.dashboard.pages.overview import render as render_overview
-from observability.dashboard.pages.data_browser import render as render_data_browser
-from observability.dashboard.pages.ingestion_manager import render as render_ingestion_manager
-from observability.dashboard.pages.ingestion_traces import render as render_ingestion_traces
-from observability.dashboard.pages.query_traces import render as render_query_traces
-from observability.dashboard.pages.evaluation_panel import render as render_evaluation_panel
+# Pages are relative to this script's directory
+_PAGES_DIR = Path(__file__).parent / "pages"
 
 
 def main() -> None:
     """Main entry point for the Dashboard."""
+    pages = {
+        "": [
+            st.Page(
+                str(_PAGES_DIR / "overview.py"),
+                title="System Overview",
+                icon=":material/dashboard:",
+                url_path="overview",
+            ),
+            st.Page(
+                str(_PAGES_DIR / "data_browser.py"),
+                title="Data Browser",
+                icon=":material/storage:",
+                url_path="data_browser",
+            ),
+            st.Page(
+                str(_PAGES_DIR / "ingestion_manager.py"),
+                title="Ingestion Manager",
+                icon=":material/upload:",
+                url_path="ingestion_manager",
+            ),
+            st.Page(
+                str(_PAGES_DIR / "ingestion_traces.py"),
+                title="Ingestion Traces",
+                icon=":material/timeline:",
+                url_path="ingestion_traces",
+            ),
+            st.Page(
+                str(_PAGES_DIR / "query_traces.py"),
+                title="Query Traces",
+                icon=":material/search:",
+                url_path="query_traces",
+            ),
+            st.Page(
+                str(_PAGES_DIR / "evaluation_panel.py"),
+                title="Evaluation Panel",
+                icon=":material/assessment:",
+                url_path="evaluation_panel",
+            ),
+        ],
+    }
+    pg = st.navigation(pages)
     st.set_page_config(
         page_title="RAG Dashboard",
-        page_icon="🔍",
+        page_icon=":material/search:",
         layout="wide",
     )
-
-    st.sidebar.title("Navigation")
-    page = st.sidebar.radio(
-        "Go to",
-        [
-            "System Overview",
-            "Data Browser",
-            "Ingestion Manager",
-            "Ingestion Traces",
-            "Query Traces",
-            "Evaluation Panel",
-        ],
-    )
-
-    if page == "System Overview":
-        render_overview()
-    elif page == "Data Browser":
-        render_data_browser()
-    elif page == "Ingestion Manager":
-        render_ingestion_manager()
-    elif page == "Ingestion Traces":
-        render_ingestion_traces()
-    elif page == "Query Traces":
-        render_query_traces()
-    elif page == "Evaluation Panel":
-        render_evaluation_panel()
+    pg.run()
 
 
 if __name__ == "__main__":

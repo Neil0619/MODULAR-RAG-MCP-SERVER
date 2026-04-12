@@ -87,3 +87,6 @@ def render() -> None:
             st.info(f"Could not read traces: {exc}")
     else:
         st.info("No trace file found. Run a query or ingestion to generate traces.")
+
+
+render()

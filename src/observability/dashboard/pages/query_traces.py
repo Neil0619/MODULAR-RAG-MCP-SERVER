@@ -135,3 +135,6 @@ def _render_trace_detail(
                     st.markdown(f"**{k}:** `{v}`")
             else:
                 st.caption("No additional details.")
+
+
+render()

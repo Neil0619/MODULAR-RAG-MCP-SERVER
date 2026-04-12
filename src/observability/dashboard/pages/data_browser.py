@@ -153,3 +153,6 @@ def _show_image(img_path: str, image_id: str) -> None:
         st.image(f"data:{mime};base64,{encoded}", caption=image_id)
     except Exception as exc:
         st.caption(f"[Error loading image: {exc}]")
+
+
+render()
