@@ -9,6 +9,9 @@
 - [项目概述](#-项目概述)
 - [分支说明](#-分支说明)
 - [快速开始](#-快速开始)
+- [MCP 配置示例](#-mcp-配置示例)
+- [Dashboard 使用指南](#-dashboard-使用指南)
+- [运行测试](#-运行测试)
 - [谁适合用这个项目 & 怎么用](#-谁适合用这个项目--怎么用)
 - [简历参考](#-简历参考)
 - [常见问题](#-常见问题)
@@ -121,6 +124,183 @@ setup
 Agent 会自动引导你完成全部配置流程。
 
 > 💡 如果不熟悉 Skill 的使用方式，请观看配套笔记中的 **Setup Skill 使用讲解视频**。
+
+### 3. 手动配置（不使用 Setup Skill）
+
+<details>
+<summary>点击展开手动配置步骤</summary>
+
+#### 安装依赖
+
+```bash
+# 创建虚拟环境
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+
+# 安装依赖
+pip install -r requirements.txt
+```
+
+#### 配置 API Key
+
+编辑 `config/settings.yaml`，将 API Key 通过环境变量注入：
+
+```bash
+# 示例：使用豆包（Doubao）
+export VOLCES_API_KEY="your-api-key-here"
+
+# 或使用 OpenAI
+export OPENAI_API_KEY="your-openai-key"
+```
+
+#### 配置说明
+
+`config/settings.yaml` 核心字段：
+
+| 字段 | 说明 | 可选值 |
+|------|------|--------|
+| `llm.provider` | LLM 提供商 | `azure` / `openai` / `ollama` / `deepseek` / `doubao` |
+| `llm.model` | 模型名称 | 取决于 Provider |
+| `embedding.provider` | Embedding 提供商 | `openai` / `azure` / `ollama` / `doubao` |
+| `vector_store.backend` | 向量数据库 | `chroma` |
+| `retrieval.sparse_backend` | 稀疏检索后端 | `bm25` |
+| `rerank.backend` | 重排后端 | `none` / `cross_encoder` / `llm` |
+| `evaluation.backends` | 评估后端列表 | `custom` / `ragas` |
+
+#### 运行首次摄取
+
+```bash
+# 摄取 PDF 文档
+python scripts/ingest.py --path tests/fixtures/sample_documents/ --collection default
+
+# 查询知识库
+python scripts/query.py --query "测试查询" --verbose
+```
+
+</details>
+
+---
+
+## 📡 MCP 配置示例
+
+本项目是标准的 MCP Server，可集成到任何支持 MCP 协议的 AI 工具中。
+
+### GitHub Copilot（VS Code）
+
+在项目根目录创建 `.vscode/mcp.json`：
+
+```json
+{
+  "servers": {
+    "modular-rag": {
+      "command": "python",
+      "args": ["src/mcp_server/server.py"],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "VOLCES_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
+```
+
+### Claude Desktop
+
+编辑 `~/Library/Application Support/Claude/claude_desktop_config.json`（macOS）：
+
+```json
+{
+  "mcpServers": {
+    "modular-rag": {
+      "command": "python",
+      "args": ["src/mcp_server/server.py"],
+      "cwd": "/path/to/Modular-RAG-MCP-SERVER",
+      "env": {
+        "VOLCES_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
+```
+
+### Cursor
+
+在 Cursor Settings → MCP 中添加配置，格式与 Copilot 类似。
+
+### 可用工具
+
+MCP Server 暴露以下工具：
+
+| 工具名 | 说明 | 参数 |
+|--------|------|------|
+| `query_knowledge_hub` | 混合检索知识库 | `query`（必填）、`top_k`、`collection` |
+
+---
+
+## 📊 Dashboard 使用指南
+
+### 启动 Dashboard
+
+```bash
+streamlit run src/observability/dashboard/app.py
+```
+
+Dashboard 默认运行在 `http://localhost:8501`。
+
+### 六大功能页面
+
+| 页面 | 功能说明 |
+|------|----------|
+| **System Overview** | 查看当前系统配置（LLM/Embedding/VectorStore 等）、数据统计、最近活动 |
+| **Data Browser** | 浏览各 Collection 下的文档、查看 Chunk 详情与图片预览 |
+| **Ingestion Manager** | 上传文档并执行摄取、查看摄取进度、删除文档 |
+| **Ingestion Traces** | 查看摄取链路的追踪记录、各阶段耗时柱状图 |
+| **Query Traces** | 查看查询链路的追踪记录、Dense/Sparse 对比、Fusion/Rerank 详情 |
+| **Evaluation Panel** | 运行评估测试、查看指标（hit_rate/MRR/faithfulness 等）、历史对比 |
+
+### 工作流示例
+
+1. **摄取文档**：进入 Ingestion Manager → 上传 PDF → 等待摄取完成
+2. **浏览数据**：进入 Data Browser → 选择 Collection → 查看文档 Chunk 和图片
+3. **查询追踪**：通过 MCP Client 发起查询 → 进入 Query Traces 查看链路细节
+4. **评估质量**：进入 Evaluation Panel → 点击 Run Evaluation → 查看指标
+
+---
+
+## 🧪 运行测试
+
+项目采用三层测试体系：
+
+```bash
+# 运行全部测试
+pytest tests/ -q
+
+# 仅运行单元测试
+pytest tests/unit/ -q
+
+# 仅运行集成测试
+pytest tests/integration/ -q
+
+# 仅运行端到端测试
+pytest tests/e2e/ -q
+
+# 运行评估回归测试（需要先摄取数据）
+pytest tests/e2e/test_recall.py -v
+
+# 运行 Dashboard 冒烟测试
+pytest tests/e2e/test_dashboard_smoke.py -v
+
+# 运行 MCP 协议模拟测试
+pytest tests/e2e/test_mcp_client.py -v
+```
+
+### 测试覆盖范围
+
+| 层级 | 测试数 | 覆盖内容 |
+|------|--------|----------|
+| Unit | ~700+ | 独立模块逻辑（检索、分块、向量存储、评估器等） |
+| Integration | ~20+ | 模块间交互（摄取管线、混合检索、文档管理） |
+| E2E | ~25+ | 完整链路（MCP 协议、Dashboard 渲染、查询脚本、评估回归） |
 
 ---
 
