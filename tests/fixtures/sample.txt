@@ -1,0 +1,8 @@
+This is a sample text file for testing the TXT loader.
+
+It contains multiple paragraphs with different content.
+
+The quick brown fox jumps over the lazy dog.
+This line has some numbers: 42, 3.14, and 100.
+
+End of sample file.
