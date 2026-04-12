@@ -10,8 +10,9 @@ from typing import Any
 from core.settings import Settings
 from libs.llm.base_llm import BaseLLM
 from libs.reranker.base_reranker import BaseReranker, RerankCandidate
+from observability.logger import get_logger as _get_logger
 
-logger = logging.getLogger(__name__)
+logger = _get_logger("rag.reranker.llm")
 
 _RERANK_PROMPT_PATH = Path("config/prompts/rerank.txt")
 

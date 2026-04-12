@@ -17,7 +17,9 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
-logger = logging.getLogger(__name__)
+from observability.logger import get_logger as _get_logger
+
+logger = _get_logger("rag.mcp.protocol")
 
 # JSON-RPC 2.0 error codes
 INVALID_REQUEST = -32600

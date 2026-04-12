@@ -12,8 +12,9 @@ import logging
 from typing import Any
 
 from core.trace.trace_context import TraceContext
+from observability.logger import get_logger as _get_logger
 
-logger = logging.getLogger(__name__)
+logger = _get_logger("rag.trace.collector")
 
 
 class TraceCollector:

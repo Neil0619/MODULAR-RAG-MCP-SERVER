@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import logging
 import tempfile
 from pathlib import Path
 from typing import Any
 
 import streamlit as st
+
+logger = logging.getLogger("rag.dashboard.ingestion")
 
 
 def render() -> None:
@@ -27,21 +30,29 @@ def _render_upload_section() -> None:
     """File upload widget and ingestion trigger."""
     st.subheader("Upload & Ingest")
 
+    from libs.loader.loader_factory import LoaderFactory
+
+    supported_exts = LoaderFactory.supported_extensions()
+
     col1, col2 = st.columns([3, 1])
     with col1:
         uploaded_files = st.file_uploader(
-            "Select PDF files",
-            type=["pdf"],
+            "Select document files",
+            type=supported_exts,
             accept_multiple_files=True,
         )
     with col2:
         collection = st.text_input("Collection", value="default")
 
     if not uploaded_files:
-        st.info("Select one or more PDF files to ingest.")
+        st.info("Select one or more document files to ingest.")
         return
 
     if st.button("Start Ingestion", type="primary"):
+        logger.info(
+            "Start Ingestion clicked: files=%s, collection=%s",
+            [f.name for f in uploaded_files], collection,
+        )
         _run_ingestion(uploaded_files, collection)
 
 
@@ -62,12 +73,15 @@ def _run_ingestion(
 
         # Write uploaded bytes to a temp file
         with tempfile.NamedTemporaryFile(
-            suffix=".pdf", delete=False, prefix="ingest_"
+            suffix=Path(uploaded.name).suffix or ".bin",
+            delete=False,
+            prefix="ingest_",
         ) as tmp:
             tmp.write(uploaded.getvalue())
             tmp_path = tmp.name
 
         try:
+            logger.info("Creating pipeline for file: %s, collection: %s", file_label, collection)
             pipeline = IngestionPipeline(settings, collection=collection)
 
             # Stage-level progress bar
@@ -86,7 +100,9 @@ def _run_ingestion(
                     text=f"[{file_idx+1}/{total_files}] {_label} — {stage_name} ({current}/{total})",
                 )
 
+            logger.info("Running pipeline for file: %s, tmp_path: %s", file_label, tmp_path)
             summary = pipeline.run(tmp_path, force=True, on_progress=_on_progress)
+            logger.info("Pipeline result for %s: %s", file_label, summary)
 
             if summary.get("skipped"):
                 stage_bar.progress(1.0, text=f"[{file_idx+1}/{total_files}] {file_label} — skipped (already ingested)")

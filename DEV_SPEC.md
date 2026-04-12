@@ -2071,8 +2071,8 @@ dashboard:
 | J3 | Office 文档 Loader（DOCX, PPTX） | [x] | 2026-04-13 | DocxLoader+PptxLoader+paragraph/table/slide+16契约测试 |
 | J4 | 结构化文本 Loader（HTML, CSV） | [x] | 2026-04-13 | HtmlLoader+CsvLoader+script/style stripping+markdown table+19契约测试 |
 | J5 | 视频 Loader（Whisper + 关键帧） | [x] | 2026-04-13 | VideoLoader+audio transcription+frame extraction+7 mock测试 |
-| J6 | Pipeline 集成 + Dashboard 更新 | [ ] | | |
-| J7 | 测试与契约验证 | [ ] | | |
+| J6 | Pipeline 集成 + Dashboard 更新 | [x] | 2026-04-13 | pipeline改用LoaderFactory+Dashboard多格式上传+LoaderSettings+回归修复 |
+| J7 | 测试与契约验证 | [x] | 2026-04-13 | 9 multiformat pipeline测试+回归821全绿(excl. doubao API) |
 
 ---
 
@@ -2089,8 +2089,8 @@ dashboard:
 | 阶段 G | 6 | 6 | 100% |
 | 阶段 H | 5 | 5 | 100% |
 | 阶段 I | 5 | 5 | 100% |
-| 阶段 J | 7 | 5 | 71% |
-| **总计** | **76** | **74** | **97%** |
+| 阶段 J | 7 | 7 | 100% |
+| **总计** | **76** | **76** | **100%** |
 
 
 ---

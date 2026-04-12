@@ -13,12 +13,13 @@ from typing import TYPE_CHECKING, Any
 from core.types import RetrievalResult
 from libs.reranker.base_reranker import BaseReranker, RerankCandidate
 from libs.reranker.reranker_factory import RerankerFactory
+from observability.logger import get_logger as _get_logger
 
 if TYPE_CHECKING:
     from core.settings import Settings
     from core.trace.trace_context import TraceContext
 
-logger = logging.getLogger(__name__)
+logger = _get_logger("rag.query.reranker")
 
 
 class Reranker:

@@ -6,6 +6,7 @@ recording per-batch timing for trace/observability.
 
 from __future__ import annotations
 
+import logging
 import time
 from typing import TYPE_CHECKING, Any
 
@@ -16,6 +17,8 @@ from ingestion.embedding.sparse_encoder import SparseEncoder
 if TYPE_CHECKING:
     from core.settings import Settings
     from core.trace.trace_context import TraceContext
+
+logger = logging.getLogger("rag.embedding.batch")
 
 
 class BatchProcessor:
@@ -62,6 +65,10 @@ class BatchProcessor:
 
         records: list[ChunkRecord] = []
         total_batches = (len(chunks) + self._batch_size - 1) // self._batch_size
+        logger.info(
+            "BatchProcessor.process: %d chunks → %d batches (batch_size=%d)",
+            len(chunks), total_batches, self._batch_size,
+        )
 
         for batch_idx in range(total_batches):
             start = batch_idx * self._batch_size
@@ -70,10 +77,18 @@ class BatchProcessor:
 
             batch_start = time.monotonic()
 
+            logger.info(
+                "Encoding batch %d/%d: %d chunks", batch_idx + 1, total_batches, len(batch),
+            )
             dense_vectors = self._dense.encode(batch)
             sparse_vectors = self._sparse.encode(batch)
 
             batch_elapsed = time.monotonic() - batch_start
+            logger.info(
+                "Batch %d/%d done: elapsed=%.2fs, dense=%d, sparse=%d",
+                batch_idx + 1, total_batches, batch_elapsed,
+                len(dense_vectors), len(sparse_vectors),
+            )
 
             for chunk, dense_vec, sparse_vec in zip(batch, dense_vectors, sparse_vectors):
                 records.append(

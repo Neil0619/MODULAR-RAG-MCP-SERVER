@@ -17,12 +17,13 @@ from core.query_engine.sparse_retriever import SparseRetriever
 from core.types import RetrievalResult
 from libs.embedding.embedding_factory import EmbeddingFactory
 from libs.vector_store.vector_store_factory import VectorStoreFactory
+from observability.logger import get_logger as _get_logger
 
 if TYPE_CHECKING:
     from core.settings import Settings
     from core.trace.trace_context import TraceContext
 
-logger = logging.getLogger(__name__)
+logger = _get_logger("rag.query.hybrid")
 
 
 class HybridSearch:

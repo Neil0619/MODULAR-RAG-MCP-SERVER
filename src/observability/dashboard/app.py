@@ -9,6 +9,13 @@ from pathlib import Path
 
 import streamlit as st
 
+# Initialise the root "rag" logger so that all rag.* child loggers
+# (rag.embedding.doubao, rag.dashboard.ingestion, etc.) inherit
+# the stderr + file handlers automatically.
+from observability.logger import get_logger
+
+get_logger("rag")
+
 # Pages are relative to this script's directory
 _PAGES_DIR = Path(__file__).parent / "pages"
 

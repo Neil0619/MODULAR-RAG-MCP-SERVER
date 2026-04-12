@@ -6,6 +6,7 @@ into dense vectors for vector store retrieval.
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING, Any
 
 from core.types import Chunk
@@ -14,6 +15,8 @@ from libs.embedding.embedding_factory import EmbeddingFactory
 if TYPE_CHECKING:
     from core.settings import Settings
     from core.trace.trace_context import TraceContext
+
+logger = logging.getLogger("rag.embedding.dense")
 
 
 class DenseEncoder:
@@ -54,6 +57,7 @@ class DenseEncoder:
             raise ValueError("chunks must not be empty")
 
         texts = [chunk.text for chunk in chunks]
+        logger.info("DenseEncoder.encode: %d chunks, dimensions=%d", len(texts), self._dimensions)
         return self._embedder.embed(texts)
 
     def encode_texts(
@@ -73,4 +77,5 @@ class DenseEncoder:
         if not texts:
             raise ValueError("texts must not be empty")
 
+        logger.info("DenseEncoder.encode_texts: %d texts", len(texts))
         return self._embedder.embed(texts)

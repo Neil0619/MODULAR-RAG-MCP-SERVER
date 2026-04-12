@@ -139,6 +139,19 @@ class IngestionSettings:
 
 
 @dataclass
+class LoaderSettings:
+    """Loader configuration."""
+
+    @dataclass
+    class VideoSettings:
+        frame_interval_sec: int = 10
+        max_frames: int = 30
+        whisper_model: str = "base"
+
+    video: VideoSettings = field(default_factory=VideoSettings)
+
+
+@dataclass
 class EvaluationSettings:
     backends: list[str] = field(default_factory=lambda: ["custom"])
     golden_test_set: str = "./tests/fixtures/golden_test_set.json"
@@ -178,6 +191,7 @@ class Settings:
     retrieval: RetrievalSettings = field(default_factory=RetrievalSettings)
     rerank: RerankSettings = field(default_factory=RerankSettings)
     ingestion: IngestionSettings = field(default_factory=IngestionSettings)
+    loader: LoaderSettings = field(default_factory=LoaderSettings)
     evaluation: EvaluationSettings = field(default_factory=EvaluationSettings)
     observability: ObservabilitySettings = field(default_factory=ObservabilitySettings)
     dashboard: DashboardSettings = field(default_factory=DashboardSettings)

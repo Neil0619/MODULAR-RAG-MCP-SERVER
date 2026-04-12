@@ -65,13 +65,15 @@ class TestPipelineProgress:
             return bp
 
         with (
-            patch("ingestion.pipeline.PdfLoader") as MockLoader,
+            patch("ingestion.pipeline.LoaderFactory") as MockFactory,
             patch("ingestion.pipeline.BatchProcessor") as MockBatch,
         ):
-            MockLoader.return_value.load.return_value = Document(
+            mock_loader = MagicMock()
+            mock_loader.load.return_value = Document(
                 text="Test paragraph with enough content to produce at least one chunk. " * 10,
                 metadata={"source_path": "test.pdf", "page_count": 1},
             )
+            MockFactory.create_from_path.return_value = mock_loader
             MockBatch.side_effect = make_batch
 
             pipeline = IngestionPipeline(settings, collection="test")

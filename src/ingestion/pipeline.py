@@ -15,6 +15,8 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable
 
+from observability.logger import get_logger as _get_logger
+
 from core.trace.trace_context import TraceContext
 from core.trace.trace_collector import TraceCollector
 from core.types import Document
@@ -26,12 +28,12 @@ from ingestion.transform.chunk_refiner import ChunkRefiner
 from ingestion.transform.image_captioner import ImageCaptioner
 from ingestion.transform.metadata_enricher import MetadataEnricher
 from libs.loader.file_integrity import SQLiteIntegrityChecker
-from libs.loader.pdf_loader import PdfLoader
+from libs.loader.loader_factory import LoaderFactory
 
 if TYPE_CHECKING:
     from core.settings import Settings
 
-logger = logging.getLogger(__name__)
+logger = _get_logger("rag.pipeline")
 
 
 class PipelineError(Exception):
@@ -111,10 +113,10 @@ class IngestionPipeline:
         try:
             logger.info("Loading: %s", path)
             self._trace.start_stage("load")
-            loader = PdfLoader()
+            loader = LoaderFactory.create_from_path(str(path))
             document = loader.load(str(path))
             summary["stages"]["load"] = {
-                "method": "markitdown",
+                "method": document.metadata.get("doc_type", "unknown"),
                 "text_length": len(document.text),
                 "page_count": document.metadata.get("page_count", 0),
                 "image_count": len(document.metadata.get("images", [])),

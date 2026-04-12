@@ -255,11 +255,13 @@ class TestIngestionPipeline:
         # We'll mock the loader to return empty text
         from core.types import Document
 
-        with patch("ingestion.pipeline.PdfLoader") as MockLoader:
-            MockLoader.return_value.load.return_value = Document(
+        with patch("ingestion.pipeline.LoaderFactory") as MockFactory:
+            mock_loader = MagicMock()
+            mock_loader.load.return_value = Document(
                 text="   ",  # whitespace-only
                 metadata={"source_path": "test.pdf", "page_count": 1},
             )
+            MockFactory.create_from_path.return_value = mock_loader
 
             summary = pipeline.run(str(SIMPLE_PDF), force=True)
 
@@ -290,7 +292,7 @@ class TestIngestionPipeline:
             assert "elapsed_ms" in data, f"Stage {name} missing elapsed_ms"
 
         # Check specific method fields
-        assert trace.stages["load"]["method"] == "markitdown"
+        assert trace.stages["load"]["method"] == "pdf"
         assert trace.stages["split"]["method"] == "recursive"
         assert trace.stages["encode"]["method"] == "dense+sparse"
         assert trace.stages["store"]["method"] == "chroma"

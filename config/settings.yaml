@@ -57,6 +57,12 @@ ingestion:
   image_captioner:
     enabled: false
 
+loader:
+  video:
+    frame_interval_sec: 10
+    max_frames: 30
+    whisper_model: base
+
 evaluation:
   backends:
     - custom
