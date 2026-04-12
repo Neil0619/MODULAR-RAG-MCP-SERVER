@@ -2070,7 +2070,7 @@ dashboard:
 | J2 | 简单文本 Loader（TXT, Markdown） | [x] | 2026-04-13 | TxtLoader+MarkdownLoader+heading_outline+15契约测试 |
 | J3 | Office 文档 Loader（DOCX, PPTX） | [x] | 2026-04-13 | DocxLoader+PptxLoader+paragraph/table/slide+16契约测试 |
 | J4 | 结构化文本 Loader（HTML, CSV） | [x] | 2026-04-13 | HtmlLoader+CsvLoader+script/style stripping+markdown table+19契约测试 |
-| J5 | 视频 Loader（Whisper + 关键帧） | [ ] | | |
+| J5 | 视频 Loader（Whisper + 关键帧） | [x] | 2026-04-13 | VideoLoader+audio transcription+frame extraction+7 mock测试 |
 | J6 | Pipeline 集成 + Dashboard 更新 | [ ] | | |
 | J7 | 测试与契约验证 | [ ] | | |
 
@@ -2089,8 +2089,8 @@ dashboard:
 | 阶段 G | 6 | 6 | 100% |
 | 阶段 H | 5 | 5 | 100% |
 | 阶段 I | 5 | 5 | 100% |
-| 阶段 J | 7 | 4 | 57% |
-| **总计** | **76** | **73** | **96%** |
+| 阶段 J | 7 | 5 | 71% |
+| **总计** | **76** | **74** | **97%** |
 
 
 ---
