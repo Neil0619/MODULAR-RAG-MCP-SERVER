@@ -94,3 +94,57 @@ class TestVectorStoreFactory:
         )
         vs = VectorStoreFactory.create(_settings("fake"))
         assert isinstance(vs, FakeVectorStore)
+
+
+class TestDeleteByMetadataBoundary:
+
+    def test_delete_no_match(self) -> None:
+        vs = FakeVectorStore()
+        vs.upsert([VectorRecord(id="1", vector=[], text="t", metadata={"src": "x"})])
+        assert vs.delete_by_metadata({"src": "nonexistent"}) == 0
+        assert vs.get_collection_stats()["count"] == 1
+
+    def test_delete_empty_store(self) -> None:
+        vs = FakeVectorStore()
+        assert vs.delete_by_metadata({"src": "x"}) == 0
+
+    def test_delete_partial_metadata_match(self) -> None:
+        vs = FakeVectorStore()
+        vs.upsert([VectorRecord(id="1", vector=[], text="t", metadata={"src": "x", "tag": "a"})])
+        vs.upsert([VectorRecord(id="2", vector=[], text="t", metadata={"src": "x", "tag": "b"})])
+        # Match only on src — both deleted
+        assert vs.delete_by_metadata({"src": "x"}) == 2
+        assert vs.get_collection_stats()["count"] == 0
+
+    def test_delete_multi_filter(self) -> None:
+        vs = FakeVectorStore()
+        vs.upsert([VectorRecord(id="1", vector=[], text="t", metadata={"src": "x", "tag": "a"})])
+        vs.upsert([VectorRecord(id="2", vector=[], text="t", metadata={"src": "x", "tag": "b"})])
+        # Match on both src and tag — only one deleted
+        assert vs.delete_by_metadata({"src": "x", "tag": "a"}) == 1
+        assert vs.get_collection_stats()["count"] == 1
+
+
+class TestGetAllContract:
+
+    def test_get_all_returns_all_records(self) -> None:
+        vs = FakeVectorStore()
+        vs.upsert([
+            VectorRecord(id="a", vector=[], text="t1"),
+            VectorRecord(id="b", vector=[], text="t2"),
+        ])
+        all_records = vs.get_all()
+        assert len(all_records) == 2
+        ids = {r["id"] for r in all_records}
+        assert ids == {"a", "b"}
+
+    def test_get_all_empty_store(self) -> None:
+        vs = FakeVectorStore()
+        assert vs.get_all() == []
+
+    def test_get_all_with_collection_param(self) -> None:
+        vs = FakeVectorStore()
+        vs.upsert([VectorRecord(id="1", vector=[], text="t")], collection="test")
+        # FakeVectorStore ignores collection but accepts the param
+        all_records = vs.get_all(collection="test")
+        assert len(all_records) >= 0  # contract: accepts collection kwarg

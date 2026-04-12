@@ -57,3 +57,31 @@ class TestRerankerFactory:
     def test_base_cannot_instantiate(self) -> None:
         with pytest.raises(TypeError):
             BaseReranker()  # type: ignore[abstract]
+
+
+class TestRerankerBoundary:
+
+    def test_top_k_larger_than_candidates(self) -> None:
+        r = NoneReranker()
+        cands = _candidates(2)
+        result = r.rerank("query", cands, top_k=10)
+        assert len(result) == 2
+
+    def test_top_k_zero(self) -> None:
+        r = NoneReranker()
+        result = r.rerank("query", _candidates(3), top_k=0)
+        assert len(result) == 0
+
+    def test_single_candidate(self) -> None:
+        r = NoneReranker()
+        result = r.rerank("query", _candidates(1))
+        assert len(result) == 1
+        assert result[0].id == "c0"
+
+    def test_factory_register_custom(self) -> None:
+        """Verify register_provider adds to the registry."""
+        import libs.reranker.reranker_factory as rf_mod
+        original_count = len(rf_mod._PROVIDER_REGISTRY)
+        RerankerFactory.register_provider("test_dummy", "libs.reranker.base_reranker.NoneReranker")
+        assert len(rf_mod._PROVIDER_REGISTRY) == original_count + 1
+        assert "test_dummy" in rf_mod._PROVIDER_REGISTRY
