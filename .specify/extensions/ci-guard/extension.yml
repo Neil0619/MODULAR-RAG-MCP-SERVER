@@ -1,0 +1,51 @@
+schema_version: "1.0"
+
+extension:
+  id: ci-guard
+  name: "CI Guard"
+  version: "1.0.0"
+  description: "Spec compliance gates for CI/CD — verify specs exist, check drift, and block merges on gaps"
+  author: "Quratulain-bilal"
+  repository: "https://github.com/Quratulain-bilal/spec-kit-ci-guard"
+  license: "MIT"
+
+requires:
+  speckit_version: ">=0.4.0"
+
+provides:
+  commands:
+    - name: speckit.ci.check
+      file: commands/speckit.ci.check.md
+      description: "Run all spec compliance checks and report pass/fail status for CI pipelines"
+    - name: speckit.ci.report
+      file: commands/speckit.ci.report.md
+      description: "Generate a machine-readable spec compliance report with requirement coverage metrics"
+    - name: speckit.ci.gate
+      file: commands/speckit.ci.gate.md
+      description: "Configure merge gate rules — minimum task completion, required artifacts, and drift thresholds"
+    - name: speckit.ci.drift
+      file: commands/speckit.ci.drift.md
+      description: "Detect spec-to-code drift by comparing requirements against current implementation"
+    - name: speckit.ci.badge
+      file: commands/speckit.ci.badge.md
+      description: "Generate a spec compliance badge showing current alignment percentage for README display"
+
+hooks:
+  before_implement:
+    command: speckit.ci.check
+    optional: true
+    prompt: "Run spec compliance checks before implementation?"
+    description: "Verify spec artifacts are complete and consistent before starting implementation"
+  after_implement:
+    command: speckit.ci.drift
+    optional: true
+    prompt: "Check for spec drift after implementation?"
+    description: "Detect any divergence between spec requirements and implemented code"
+
+tags:
+  - "ci-cd"
+  - "compliance"
+  - "governance"
+  - "quality-gate"
+  - "drift-detection"
+  - "automation"
